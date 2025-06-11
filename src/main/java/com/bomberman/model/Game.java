@@ -135,6 +135,12 @@ public class Game {
 
     public void placeBomb(Player player) {
         if (!player.isAlive()) return;
+        // Vérifier si le joueur a déjà une bombe sur la grille
+        boolean bombeDejaPosee = bombs.stream()
+                .anyMatch(b -> b.getOwner() == player && !b.isExploded());
+        if (bombeDejaPosee) return;
+
+        // Vérifie s'il y a déjà une bombe à cet endroit
         for (Bomb b : bombs) {
             if (b.getX() == player.getX() && b.getY() == player.getY()) {
                 return;
@@ -242,12 +248,14 @@ public class Game {
         }
     }
     private void destroyWall(int x, int y) {
-        if (Math.random() < 0.2) {
-            int bonusType = (int) (Math.random() * 3);
-            switch (bonusType) {
-                case 0 -> bonuses.add(new FlameBonus(x, y, 1));
-                case 1 -> bonuses.add(new JacketBonus(x, y));
-                case 2 -> bonuses.add(new LifeBonus(x, y));
+        if (Math.random() < 0.33) { // 33% de chances d'avoir un bonus
+            double roll = Math.random();
+            if (roll < 0.6) {
+                bonuses.add(new FlameBonus(x, y, 1));       // 60% des bonus sont des flammes
+            } else if (roll < 0.85) {
+                bonuses.add(new JacketBonus(x, y));         // 25% des bonus sont des gilets
+            } else {
+                bonuses.add(new LifeBonus(x, y));           // 15% des bonus sont des vies
             }
         }
     }

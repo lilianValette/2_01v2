@@ -77,18 +77,4 @@ public abstract class Bonus {
      * @param player le joueur qui ramasse le bonus
      */
     public abstract void applyTo(Player player);
-
-    /**
-     * Dessine ce bonus à l’écran, en pixels, sur un GraphicsContext JavaFX.
-     *
-     * @param gc        GraphicsContext (par ex. celui d’un Canvas)
-     * @param tileSize  taille, en pixels, d’une case (tile) du jeu
-     */
-    public void draw(GraphicsContext gc, int tileSize) {
-        if (!collected && sprite != null) {
-            double pixelX = x * tileSize;
-            double pixelY = y * tileSize;
-            gc.drawImage(sprite, pixelX, pixelY, tileSize, tileSize);
-        }
-    }
 }

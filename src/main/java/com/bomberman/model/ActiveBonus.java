@@ -33,13 +33,6 @@ public class ActiveBonus {
     }
 
     /**
-     * Retourne le nombre de secondes entières restantes (arrondi à l'entier supérieur).
-     */
-    public int getSecondsRemaining() {
-        return (int) Math.ceil(secondsRemaining);
-    }
-
-    /**
      * À appeler à chaque tick (par ex. 0,5 s) pour décrémenter la durée réelle.
      * @param tickDuration durée d'un tick en secondes
      */

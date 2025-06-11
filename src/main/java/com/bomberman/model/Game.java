@@ -68,7 +68,6 @@ public class Game {
                 {1, grid.getHeight() - 2},
                 {grid.getWidth() - 2, 1}
         };
-        int totalPlayers = humanCount + iaCount;
         int index = 0;
 
         // Humains

@@ -19,7 +19,6 @@ import java.util.Optional;
 /**
  * Contrôleur de l'éditeur de niveaux.
  * Permet la création, la modification et la sauvegarde de niveaux personnalisés.
- * Les textes d'interface utilisateur sont en anglais, les commentaires et erreurs en français.
  */
 public class LevelEditorController {
     @FXML private StackPane rootPane;

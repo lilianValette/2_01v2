@@ -105,7 +105,6 @@ public class Level {
                 try {
                     levels.add(Level.fromFile(f));
                 } catch (Exception ignored) {
-                    // Ignorer les fichiers invalides, aucun message de debug n'est affiché
                 }
             }
         }
@@ -120,11 +119,6 @@ public class Level {
     private static String normalizeResourcePath(String path) {
         if (path == null) return null;
         String p = path.startsWith("/") ? path : "/" + path;
-        p = p.replaceAll("\\.PNG$", ".png");
-        p = p.replace("BonhommeNeige", "bonhommeNeige");
-        p = p.replace("MurDestructible", "murDestructible");
-        p = p.replace("MurIndestructible", "murIndestructible");
-        p = p.replace("FondFeuilles", "fondFeuilles");
         return p;
     }
 }

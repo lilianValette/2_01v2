@@ -16,7 +16,6 @@ import javafx.stage.Stage;
 
 /**
  * Contrôleur de la gestion de compte utilisateur (connexion, création, profil).
- * Les messages d'erreur techniques restent en français.
  */
 public class AccountController {
     @FXML private StackPane rootPane;

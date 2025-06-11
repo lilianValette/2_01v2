@@ -11,7 +11,6 @@ import javafx.stage.Stage;
 /**
  * Contrôleur de l'écran de fin de partie.
  * Affiche le message de fin et gère le retour au menu.
- * Les messages d'erreur techniques restent en français.
  */
 public class EndGameScreenController {
     @FXML
@@ -47,7 +46,7 @@ public class EndGameScreenController {
 
     /**
      * Met à jour le message affiché à l'utilisateur dans la fenêtre de fin.
-     * @param message Message à afficher (en anglais).
+     * @param message Message à afficher.
      */
     public void setMessage(String message) {
         messageLabel.setText(message);

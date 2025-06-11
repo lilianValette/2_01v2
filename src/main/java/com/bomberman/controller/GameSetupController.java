@@ -24,7 +24,6 @@ import java.util.List;
 /**
  * Contrôleur de l'écran de configuration de partie.
  * Permet de sélectionner le nombre de joueurs, d'IAs, le niveau et de lancer la partie.
- * Tous les messages d'erreur et commentaires sont en français, l'interface utilisateur reste en anglais.
  */
 public class GameSetupController {
 

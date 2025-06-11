@@ -162,6 +162,7 @@ public class MenuController {
     /**
      * Ouvre l'écran de gestion des comptes.
      */
+    @FXML
     private void openAccount() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bomberman/view/account.fxml"));
@@ -179,6 +180,7 @@ public class MenuController {
     /**
      * Ouvre l'écran des paramètres.
      */
+    @FXML
     private void openSettings() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bomberman/view/settings.fxml"));

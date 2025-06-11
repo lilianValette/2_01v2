@@ -4,6 +4,19 @@
     -fx-text-fill: orange;
     -fx-font-weight: bold;
     -fx-alignment: center;
+    -fx-font-family: 'Press Start 2P', monospace;
+    -fx-font-size: 42px;
+    -fx-text-fill: linear-gradient(
+            from 0% 0% to 0% 100%,
+            #FFA500,
+            #FF4500
+    );
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.9), 5, 0, 3, 3 );
+    -fx-font-weight: bold;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+    -fx-padding: 6 0 10 0;
+    -fx-max-width: 400px;
 }
 
 /* Style bouton retour au menu */
@@ -31,20 +44,4 @@
 .menu-button:hover, .menu-button:focused {
     -fx-text-fill: #FFFFFF;
     -fx-effect: dropshadow(one-pass-box, #FF9900, 1, 0.7, 1, 2);
-}
-
-.endgame-message {
-    -fx-font-family: 'Press Start 2P', monospace;
-    -fx-font-size: 42px; /* un peu plus petit */
-    -fx-text-fill: linear-gradient(
-            from 0% 0% to 0% 100%,
-            #FFA500,
-            #FF4500
-    );
-    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.9), 5, 0, 3, 3 );
-    -fx-font-weight: bold;
-    -fx-text-alignment: center;
-    -fx-wrap-text: true;
-    -fx-padding: 6 0 10 0; /* moins de padding en haut pour remonter un peu */
-    -fx-max-width: 400px;
 }

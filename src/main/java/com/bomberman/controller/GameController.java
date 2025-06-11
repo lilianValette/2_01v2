@@ -326,8 +326,56 @@ public class GameController {
             Player p = game.getPlayers().get(idx);
             if (!p.isAlive() || !p.isHuman()) continue;
             switch (idx) {
-                case 0 -> handlePlayerMovement(event, p, 0, "UP", "DOWN", "LEFT", "RIGHT", "SPACE");
-                case 1 -> handlePlayerMovement(event, p, 1, "Z", "S", "Q", "D", "SHIFT");
+                case 0 -> { // Player 1: arrows + space
+                    switch (event.getCode()) {
+                        case UP    -> {
+                            playerDirections[0] = 1;
+                            game.movePlayer(p, 0, -1);
+                            updatePlayerAnim(0, p);
+                        }
+                        case DOWN  -> {
+                            playerDirections[0] = 0;
+                            game.movePlayer(p, 0, 1);
+                            updatePlayerAnim(0, p);
+                        }
+                        case LEFT  -> {
+                            playerDirections[0] = 2;
+                            game.movePlayer(p, -1, 0);
+                            updatePlayerAnim(0, p);
+                        }
+                        case RIGHT -> {
+                            playerDirections[0] = 3;
+                            game.movePlayer(p, 1, 0);
+                            updatePlayerAnim(0, p);
+                        }
+                        case SPACE -> game.placeBomb(p);
+                    }
+                }
+                case 1 -> { // Player 2: ZQSD + shift
+                    switch (event.getCode()) {
+                        case Z     -> {
+                            playerDirections[1] = 1;
+                            game.movePlayer(p, 0, -1);
+                            updatePlayerAnim(1, p);
+                        }
+                        case S     -> {
+                            playerDirections[1] = 0;
+                            game.movePlayer(p, 0, 1);
+                            updatePlayerAnim(1, p);
+                        }
+                        case Q     -> {
+                            playerDirections[1] = 2;
+                            game.movePlayer(p, -1, 0);
+                            updatePlayerAnim(1, p);
+                        }
+                        case D     -> {
+                            playerDirections[1] = 3;
+                            game.movePlayer(p, 1, 0);
+                            updatePlayerAnim(1, p);
+                        }
+                        case SHIFT -> game.placeBomb(p);
+                    }
+                }
                 // Ajouter les mappings pour joueurs 3/4 si besoin
             }
         }

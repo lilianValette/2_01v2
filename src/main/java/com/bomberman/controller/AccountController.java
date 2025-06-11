@@ -15,8 +15,8 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 /**
- * User account management controller (login, registration, profile).
- * Messages d'erreur techniques en français.
+ * Contrôleur de la gestion de compte utilisateur (connexion, création, profil).
+ * Les messages d'erreur techniques restent en français.
  */
 public class AccountController {
     @FXML private StackPane rootPane;
@@ -47,7 +47,7 @@ public class AccountController {
     private UserManager userManager;
 
     /**
-     * Sets the main window and applies a fixed size.
+     * Définit la fenêtre principale et applique la taille fixe.
      */
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -88,7 +88,7 @@ public class AccountController {
     }
 
     /**
-     * Loads the game's main CSS file.
+     * Charge le fichier CSS principal du jeu.
      */
     private void loadStylesheet() {
         try {
@@ -104,7 +104,7 @@ public class AccountController {
     }
 
     /**
-     * Applies custom CSS classes to buttons.
+     * Applique les classes CSS personnalisées aux boutons.
      */
     private void setupButtonStyles() {
         Platform.runLater(() -> {
@@ -121,7 +121,7 @@ public class AccountController {
     }
 
     /**
-     * Applies a CSS class to a button.
+     * Applique la classe CSS à un bouton.
      */
     private void setupButtonStyle(Button button, String styleClass) {
         if (button != null) {
@@ -132,7 +132,7 @@ public class AccountController {
     }
 
     /**
-     * Loads the account background image.
+     * Charge l'image de fond du compte.
      */
     private void loadBackgroundImage() {
         try {
@@ -150,7 +150,7 @@ public class AccountController {
     }
 
     /**
-     * Show the login form.
+     * Affiche le formulaire de connexion.
      */
     private void showLoginView() {
         setContainerVisibility(true, false, false);
@@ -159,7 +159,7 @@ public class AccountController {
     }
 
     /**
-     * Show the registration form.
+     * Affiche le formulaire de création de compte.
      */
     private void showCreateView() {
         setContainerVisibility(false, true, false);
@@ -168,7 +168,7 @@ public class AccountController {
     }
 
     /**
-     * Show the profile for the logged-in user.
+     * Affiche le profil utilisateur connecté.
      */
     private void showProfileView() {
         setContainerVisibility(false, false, true);
@@ -176,7 +176,7 @@ public class AccountController {
     }
 
     /**
-     * Updates the visibility of containers.
+     * Met à jour la visibilité des différents conteneurs.
      */
     private void setContainerVisibility(boolean login, boolean create, boolean profile) {
         loginContainer.setVisible(login);
@@ -185,7 +185,8 @@ public class AccountController {
     }
 
     /**
-     * Handles user login.
+     * Traite la connexion utilisateur.
+     * Tous les textes affichés à l'utilisateur sont en anglais.
      */
     private void handleLogin() {
         String username = loginUsername.getText().trim();
@@ -222,7 +223,8 @@ public class AccountController {
     }
 
     /**
-     * Handles user registration.
+     * Traite la création d'un nouveau compte utilisateur.
+     * Tous les textes affichés à l'utilisateur sont en anglais.
      */
     private void handleCreateAccount() {
         String username = createUsername.getText().trim();
@@ -259,7 +261,8 @@ public class AccountController {
     }
 
     /**
-     * Validates registration fields.
+     * Valide les champs de création de compte.
+     * Tous les textes affichés à l'utilisateur sont en anglais.
      */
     private boolean validateAccountCreation(String username, String password, String confirm) {
         if (username.isEmpty() || password.isEmpty() || confirm.isEmpty()) {
@@ -286,7 +289,8 @@ public class AccountController {
     }
 
     /**
-     * Logs out the current user.
+     * Déconnecte l'utilisateur courant.
+     * Texte affiché à l'utilisateur en anglais.
      */
     private void handleLogout() {
         userManager.logout();
@@ -296,7 +300,7 @@ public class AccountController {
     }
 
     /**
-     * Real-time validation for registration form.
+     * Validation en temps réel pour le formulaire de création.
      */
     private void validateCreateForm() {
         String username = createUsername.getText().trim();
@@ -312,7 +316,7 @@ public class AccountController {
     }
 
     /**
-     * Update the display depending on login state.
+     * Met à jour l'affichage selon l'état de connexion.
      */
     private void updateUI() {
         boolean isLoggedIn = userManager.isLoggedIn();
@@ -325,7 +329,7 @@ public class AccountController {
     }
 
     /**
-     * Updates user profile info.
+     * Met à jour les informations du profil utilisateur.
      */
     private void updateProfileInfo() {
         User user = userManager.getCurrentUser();
@@ -339,21 +343,25 @@ public class AccountController {
     }
 
     /**
-     * Shows a message in the login form.
+     * Affiche un message dans le formulaire de connexion.
+     * @param message Texte en anglais à afficher.
+     * @param isError true si c'est une erreur.
      */
     private void showLoginMessage(String message, boolean isError) {
         setMessageStyle(loginMessage, message, isError);
     }
 
     /**
-     * Shows a message in the registration form.
+     * Affiche un message dans le formulaire de création.
+     * @param message Texte en anglais à afficher.
+     * @param isError true si c'est une erreur.
      */
     private void showCreateMessage(String message, boolean isError) {
         setMessageStyle(createMessage, message, isError);
     }
 
     /**
-     * Applies style to a message (success or error).
+     * Applique le style d'un message (succès ou erreur).
      */
     private void setMessageStyle(Label messageLabel, String message, boolean isError) {
         messageLabel.setText(message);
@@ -366,7 +374,7 @@ public class AccountController {
     }
 
     /**
-     * Clears all info messages.
+     * Efface tous les messages d'information.
      */
     private void clearMessages() {
         clearMessage(loginMessage);
@@ -374,7 +382,7 @@ public class AccountController {
     }
 
     /**
-     * Clears a label's message.
+     * Efface le message d'un label.
      */
     private void clearMessage(Label messageLabel) {
         messageLabel.setText("");
@@ -382,7 +390,7 @@ public class AccountController {
     }
 
     /**
-     * Clears the login form.
+     * Efface le formulaire de connexion.
      */
     private void clearLoginForm() {
         loginUsername.clear();
@@ -390,7 +398,7 @@ public class AccountController {
     }
 
     /**
-     * Clears the registration form.
+     * Efface le formulaire de création.
      */
     private void clearCreateForm() {
         createUsername.clear();
@@ -401,7 +409,7 @@ public class AccountController {
     }
 
     /**
-     * Clears all forms and messages.
+     * Efface tous les formulaires et messages.
      */
     private void clearAllForms() {
         clearLoginForm();
@@ -410,7 +418,7 @@ public class AccountController {
     }
 
     /**
-     * Return to the main menu.
+     * Retour au menu principal.
      */
     private void returnToMenu() {
         try {

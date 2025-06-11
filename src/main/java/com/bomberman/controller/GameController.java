@@ -100,7 +100,7 @@ public class GameController {
     private Level level;
     private int playerCount;
     private int iaCount;
-    private AIDifficulty aiDifficulty = AIDifficulty.FACILE;
+    private AIDifficulty aiDifficulty = AIDifficulty.EASY;
 
     private Image wallIndestructibleImg;
     private Image wallDestructibleImg;
@@ -206,7 +206,7 @@ public class GameController {
             if (timerSeconds <= 0) {
                 timerTimeline.stop();
                 gameTimeline.stop();
-                showEndGameScreen("Temps écoulé !");
+                showEndGameScreen("Time's up!");
             }
             drawGrid();
         }));
@@ -251,9 +251,9 @@ public class GameController {
             Player winner = game.getPlayers().stream().filter(Player::isAlive).findFirst().orElse(null);
             String message;
             if (winner != null) {
-                message = winner.isHuman() ? "Le joueur " + winner.getId() + " a gagné !" : "L'IA " + winner.getId() + " a gagné !";
+                message = (winner.isHuman() ? "Player " : "AI ") + winner.getId() + " wins!";
             } else {
-                message = "Match nul !";
+                message = "It's a tie!";
             }
             showEndGameScreen(message);
         }
@@ -376,39 +376,9 @@ public class GameController {
                         case SHIFT -> game.placeBomb(p);
                     }
                 }
-                // Ajouter les mappings pour joueurs 3/4 si besoin
             }
         }
         drawGrid();
-    }
-
-    /**
-     * Gère le déplacement du joueur selon les touches associées.
-     */
-    private void handlePlayerMovement(KeyEvent event, Player p, int index, String up, String down, String left, String right, String bombKey) {
-        switch (event.getCode().toString()) {
-            case "UP", "Z" -> {
-                playerDirections[index] = 1;
-                game.movePlayer(p, 0, -1);
-                updatePlayerAnim(index, p);
-            }
-            case "DOWN", "S" -> {
-                playerDirections[index] = 0;
-                game.movePlayer(p, 0, 1);
-                updatePlayerAnim(index, p);
-            }
-            case "LEFT", "Q" -> {
-                playerDirections[index] = 2;
-                game.movePlayer(p, -1, 0);
-                updatePlayerAnim(index, p);
-            }
-            case "RIGHT", "D" -> {
-                playerDirections[index] = 3;
-                game.movePlayer(p, 1, 0);
-                updatePlayerAnim(index, p);
-            }
-            case "SPACE", "SHIFT" -> game.placeBomb(p);
-        }
     }
 
     /**

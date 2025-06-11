@@ -34,9 +34,9 @@ public class PlayerAI extends Player {
     public void updateAI(Grid grid, List<Bomb> bombs, List<Player> allPlayers) {
         if (!isAlive()) return;
         switch (difficulty) {
-            case FACILE -> updateEasyAI(grid, bombs);
+            case EASY -> updateEasyAI(grid, bombs);
             case NORMAL -> updateNormalAI(grid, bombs);
-            case DIFFICILE -> updateHardAI(grid, bombs, allPlayers);
+            case HARD -> updateHardAI(grid, bombs, allPlayers);
         }
     }
 

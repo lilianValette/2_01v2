@@ -9,7 +9,7 @@ import javafx.beans.property.SimpleIntegerProperty;
  */
 public class GameSettings {
     /** Liste des niveaux d'IA disponibles (ordre = enum AIDifficulty). */
-    public static final String[] AI_LEVELS = {"FACILE", "NORMAL", "DIFFICILE"};
+    public static final String[] AI_LEVELS = {"EASY", "NORMAL", "HARD"};
     private static final IntegerProperty aiLevelIndex = new SimpleIntegerProperty(0);
 
     /** @return propriété JavaFX du niveau d'IA sélectionné */

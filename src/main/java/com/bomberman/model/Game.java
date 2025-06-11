@@ -222,6 +222,13 @@ public class Game {
                     destroyWall(nx, ny);
                     break;
                 }
+                if (c == Grid.CellType.BOMB) {
+                    for (Bomb bomb : bombs) {
+                        if (bomb.getX() == nx && bomb.getY() == ny && !bomb.isExploded()) {
+                            bomb.forceExplode();
+                        }
+                    }
+                }
             }
         }
     }

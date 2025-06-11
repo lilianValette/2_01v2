@@ -57,6 +57,8 @@ public class Bomb {
     /** Fait avancer le timer d’un tick. */
     public void tick() { timer--; }
 
+    public void forceExplode() { timer = 0; }
+
     /** @return true si la bombe a explosé */
     public boolean isExploded() { return timer <= 0; }
 }

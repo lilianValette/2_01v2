@@ -238,22 +238,21 @@ public class GameController {
     }
 
     private void checkGameOver() {
-        boolean someoneDead = game.getPlayers().stream().anyMatch(p -> p.getLives() <= 0);
-
-        if (someoneDead && !gameEnded) {
+        if (gameEnded) return;
+        long aliveCount = game.getPlayers().stream().filter(Player::isAlive).count();
+        if (aliveCount <= 1) {
             gameEnded = true;
-            Player winner = game.getPlayers().stream()
-                    .filter(Player::isAlive)
-                    .findFirst()
-                    .orElse(null);
-
+            Player winner = game.getPlayers().stream().filter(Player::isAlive).findFirst().orElse(null);
             String message;
             if (winner != null) {
-                message = "Le joueur " + winner.getId() + " a gagné !";
+                if (winner.isHuman()) {
+                    message = "Le joueur " + winner.getId() + " a gagné !";
+                } else {
+                    message = "L'IA " + winner.getId() + " a gagné !";
+                }
             } else {
                 message = "Match nul !";
             }
-
             showEndGameScreen(message);
         }
     }
@@ -292,6 +291,9 @@ public class GameController {
             }
         }
         drawGrid();
+
+        // Ajout : détection de la fin de partie
+        checkGameOver();
     }
 
     /** Retour au menu principal */
@@ -589,13 +591,8 @@ public class GameController {
             }
         }
 
-        // Fin de partie ?
-        boolean someoneDead = game.getPlayers().stream().anyMatch(p -> p.getLives() <= 0);
-        if (someoneDead) {
-            if (gameTimeline != null) gameTimeline.stop();
-            if (timerTimeline != null) timerTimeline.stop();
-            checkGameOver();
-        }
+        // SUPPRIMÉ : bloc qui arrêtait les timelines et appelait checkGameOver()
+        // La gestion de la fin de partie est maintenant uniquement dans updateIAAndGame().
     }
 
     /** Affiche l'avatar d'un joueur, ses vies, et s'il est IA. */

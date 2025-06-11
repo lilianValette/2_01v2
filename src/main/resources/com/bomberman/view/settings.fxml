@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.text.Text?>
+
+<StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx/11.0.1"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.bomberman.controller.SettingsController"
+           styleClass="main-background"
+           stylesheets="@style/settings-menu.css">
+
+    <!-- Fond -->
+    <ImageView fx:id="backgroundImage"
+               fitHeight="600.0" fitWidth="800.0"
+               pickOnBounds="true" preserveRatio="false" />
+
+    <BorderPane>
+        <!-- Header -->
+        <top>
+            <VBox alignment="CENTER" spacing="20.0" styleClass="header-section">
+                <children>
+                    <Text styleClass="page-title"
+                          text="PARAMÈTRES"
+                          textAlignment="CENTER"
+                          fill="WHITE"/>
+                </children>
+                <padding>
+                    <Insets bottom="20.0" top="30.0" />
+                </padding>
+            </VBox>
+        </top>
+        <!-- Centre -->
+        <center>
+            <VBox alignment="CENTER" spacing="30.0">
+                <VBox alignment="CENTER" spacing="22.0" styleClass="settings-menu-container" maxWidth="720" minWidth="720">
+                    <!-- Bouton principal -->
+                    <Button fx:id="levelEditorButton"
+                            text="LEVEL EDITOR"
+                            styleClass="menu-button"
+                            maxWidth="Infinity"/>
+                    <!-- Sélecteur niveau IA -->
+                    <HBox fx:id="aiLevelBox"
+                          alignment="CENTER"
+                          spacing="16"
+                          styleClass="hbox">
+                        <Label fx:id="aiLevelTextLabel"
+                               text="NIVEAU DES IA"
+                               styleClass="menu-label"
+                               maxWidth="Infinity"/>
+                        <Label fx:id="aiLevelLeftArrow"
+                               text="◀"
+                               styleClass="arrow"/>
+                        <Label fx:id="aiLevelLabel"
+                               styleClass="value-label"
+                               maxWidth="Infinity"/>
+                        <Label fx:id="aiLevelRightArrow"
+                               text="▶"
+                               styleClass="arrow"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </center>
+        <!-- Bas : bouton retour -->
+        <bottom>
+            <HBox alignment="CENTER" spacing="20.0" styleClass="footer-section">
+                <children>
+                    <Button fx:id="backButton" styleClass="game-button-secondary" text="RETOUR AU MENU" />
+                </children>
+                <padding>
+                    <Insets bottom="30.0" top="20.0" />
+                </padding>
+            </HBox>
+        </bottom>
+    </BorderPane>
+</StackPane>

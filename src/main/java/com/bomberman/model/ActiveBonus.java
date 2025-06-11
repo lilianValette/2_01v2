@@ -12,8 +12,8 @@ public class ActiveBonus {
     private double secondsRemaining;  // durée restante en secondes
 
     /**
-     * @param type           type de bonus (ici FLAME)
-     * @param extraValue     ex. +1 case de portée
+     * @param type           type de bonus (ex : FLAME, JACKET, LIFE)
+     * @param extraValue     valeur associée au bonus (ex : +1 portée)
      * @param durationSeconds durée du bonus en secondes
      */
     public ActiveBonus(Type type, int extraValue, double durationSeconds) {
@@ -22,10 +22,12 @@ public class ActiveBonus {
         this.secondsRemaining = durationSeconds;
     }
 
+    /** @return le type du bonus */
     public Type getType() {
         return type;
     }
 
+    /** @return la valeur associée au bonus (ex : portée supplémentaire) */
     public int getExtraValue() {
         return extraValue;
     }
@@ -38,12 +40,14 @@ public class ActiveBonus {
     }
 
     /**
-     * Doit être appelé à chaque tick (0,5 s) pour décrémenter la durée réelle.
+     * À appeler à chaque tick (par ex. 0,5 s) pour décrémenter la durée réelle.
+     * @param tickDuration durée d'un tick en secondes
      */
     public void tick(double tickDuration) {
         secondsRemaining -= tickDuration;
     }
 
+    /** @return true si le bonus est expiré */
     public boolean isExpired() {
         return secondsRemaining <= 0;
     }

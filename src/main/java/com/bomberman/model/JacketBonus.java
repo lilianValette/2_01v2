@@ -1,17 +1,29 @@
 package com.bomberman.model;
 
+/**
+ * Bonus JACKET : rend temporairement invincible face aux bombes.
+ */
 public class JacketBonus extends Bonus {
-    private final double durationSeconds = 20.0;
+    private static final double DURATION_SECONDS = 20.0;
 
+    /**
+     * Crée un bonus Jacket à la position donnée.
+     * @param x position X
+     * @param y position Y
+     */
     public JacketBonus(int x, int y) {
-        super(x, y, "/images/items/jacket_bonus.png"); // mets ici ton image
+        super(x, y, "/images/items/jacket_bonus.png");
     }
 
+    /**
+     * Applique le bonus au joueur (invincibilité temporaire).
+     * @param player joueur cible
+     */
     @Override
     public void applyTo(Player player) {
-        if (!collected) {
-            player.addJacketBonusTemp(durationSeconds);
-            collected = true;
+        if (!isCollected()) {
+            player.addJacketBonusTemp(DURATION_SECONDS);
+            setCollected(true);
         }
     }
 }

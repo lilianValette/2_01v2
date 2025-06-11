@@ -19,11 +19,16 @@ import javafx.util.Duration;
 import javafx.scene.image.Image;
 import com.bomberman.model.Game.ExplosionCell;
 import com.bomberman.model.Game.ExplosionPartType;
-import com.bomberman.model.Game.Direction;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
+/**
+ * Contrôleur principal de la partie.
+ * Gère l'affichage, la logique du jeu et les interactions clavier.
+ */
 public class GameController {
     @FXML
     private Canvas gameCanvas;
@@ -35,7 +40,7 @@ public class GameController {
 
     // Constantes d'affichage
     public static final int DEFAULT_CELL_SIZE = 48;
-    private final int CELL_SIZE = DEFAULT_CELL_SIZE;
+    private static final int CELL_SIZE = DEFAULT_CELL_SIZE;
     private static final double BORDER_PIXEL_RATIO = 0.5;
     private static final double TOP_UI_HEIGHT_RATIO = 2.5;
 
@@ -108,7 +113,7 @@ public class GameController {
     private Image lifeBonusImg;
     private boolean gameEnded = false;
 
-    private static final java.util.Map<String, Image> imageCache = new java.util.HashMap<>();
+    private static final Map<String, Image> imageCache = new HashMap<>();
 
     public void setStage(Stage stage) { this.stage = stage; }
     public void setLevel(Level level) { this.level = level; }
@@ -119,11 +124,12 @@ public class GameController {
     @FXML
     public void initialize() {}
 
+    /**
+     * Démarre une partie et initialise l'affichage et la logique.
+     */
     public void startGame() {
-        // Création du modèle avec la difficulté IA choisie
         game = new Game(15, 13, playerCount, iaCount, level, aiDifficulty);
 
-        // Chargement des images
         for (int i = 0; i < avatarsJoueurs.length; i++) {
             avatarsJoueurs[i] = safeImageFromResource(AVATAR_PATHS[i]);
         }
@@ -138,10 +144,9 @@ public class GameController {
             }
         }
 
-
-        jacketBonusImg = new Image(getClass().getResourceAsStream("/images/items/jacket_bonus.png"));
-        flameBonusImg = new Image(getClass().getResourceAsStream("/images/items/flame_bonus.png"));
-        lifeBonusImg = new Image(getClass().getResourceAsStream("/images/items/life_bonus.png"));
+        jacketBonusImg = safeImageFromResource("/images/items/jacket_bonus.png");
+        flameBonusImg = safeImageFromResource("/images/items/flame_bonus.png");
+        lifeBonusImg = safeImageFromResource("/images/items/life_bonus.png");
         wallIndestructibleImg = safeImageFromResource(level.getWallIndestructibleImagePath());
         wallDestructibleImg   = safeImageFromResource(level.getWallDestructibleImagePath());
         solImg                = safeImageFromResource(level.getGroundImagePath());
@@ -151,7 +156,6 @@ public class GameController {
         explosionV2BrancheImg = safeImageFromResource("/images/explosion/ExplosionV2.png");
         explosionV2FinImg     = safeImageFromResource("/images/explosion/ExplosionV2-fin.png");
 
-        // Mise à l'échelle du canvas/fenêtre
         int gridWidth = game.getGrid().getWidth();
         int gridHeight = game.getGrid().getHeight();
         double borderPixel = CELL_SIZE * BORDER_PIXEL_RATIO;
@@ -169,11 +173,9 @@ public class GameController {
             stage.setMaxHeight(canvasHeight + 40);
         }
 
-        // Directions initiales
         playerDirections = new int[game.getPlayers().size()];
         for (int i = 0; i < playerDirections.length; i++) playerDirections[i] = 0;
 
-        // Initialisation animation : positions visuelles = positions logiques
         playerAnims = new PlayerAnim[game.getPlayers().size()];
         for (int i = 0; i < playerAnims.length; i++) {
             Player p = game.getPlayers().get(i);
@@ -182,7 +184,6 @@ public class GameController {
             playerAnims[i].visY = p.getY();
             playerAnims[i].targetX = p.getX();
             playerAnims[i].targetY = p.getY();
-            playerAnims[i].moving = false;
         }
 
         drawGrid();
@@ -193,7 +194,7 @@ public class GameController {
 
         // Ticks de jeu
         if (gameTimeline != null) gameTimeline.stop();
-        gameTimeline = new Timeline(new KeyFrame(Duration.seconds(0.05), e -> updateIAAndGame())); // Plus rapide pour l'animation
+        gameTimeline = new Timeline(new KeyFrame(Duration.seconds(0.05), e -> updateIAAndGame()));
         gameTimeline.setCycleCount(Timeline.INDEFINITE);
         gameTimeline.play();
 
@@ -205,13 +206,18 @@ public class GameController {
             if (timerSeconds <= 0) {
                 timerTimeline.stop();
                 gameTimeline.stop();
-                showEndGameScreen("Temps écoulé !");            }
+                showEndGameScreen("Temps écoulé !");
+            }
             drawGrid();
         }));
         timerTimeline.setCycleCount(Timeline.INDEFINITE);
         timerTimeline.play();
     }
 
+    /**
+     * Affiche l'écran de fin de partie avec le message donné.
+     * @param message Message à afficher
+     */
     private void showEndGameScreen(String message) {
         if (gameTimeline != null) gameTimeline.stop();
         if (timerTimeline != null) timerTimeline.stop();
@@ -219,24 +225,24 @@ public class GameController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bomberman/view/EndGameScreen.fxml"));
             Parent root = loader.load();
-
             if (stage != null) {
                 stage.setScene(new Scene(root));
                 stage.show();
-                System.out.println("Scene changée, stage : " + stage);
             } else {
                 System.err.println("Stage est null, impossible de changer de scène");
             }
-
             EndGameScreenController controller = loader.getController();
             controller.setMessage(message);
-            controller.setOnReturnCallback(() -> returnToMenu());
+            controller.setOnReturnCallback(this::returnToMenu);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Vérifie si la partie est terminée.
+     */
     private void checkGameOver() {
         if (gameEnded) return;
         long aliveCount = game.getPlayers().stream().filter(Player::isAlive).count();
@@ -245,11 +251,7 @@ public class GameController {
             Player winner = game.getPlayers().stream().filter(Player::isAlive).findFirst().orElse(null);
             String message;
             if (winner != null) {
-                if (winner.isHuman()) {
-                    message = "Le joueur " + winner.getId() + " a gagné !";
-                } else {
-                    message = "L'IA " + winner.getId() + " a gagné !";
-                }
+                message = winner.isHuman() ? "Le joueur " + winner.getId() + " a gagné !" : "L'IA " + winner.getId() + " a gagné !";
             } else {
                 message = "Match nul !";
             }
@@ -257,6 +259,9 @@ public class GameController {
         }
     }
 
+    /**
+     * Met à jour la logique du jeu et les IA, puis vérifie la fin de partie.
+     */
     private void updateIAAndGame() {
         int nbPlayers = game.getPlayers().size();
         int[] prevX = new int[nbPlayers];
@@ -267,7 +272,7 @@ public class GameController {
             prevY[i] = p.getY();
         }
 
-        // On ne fait updateAIs et updateBombs que toutes les 4 frames (pour laisser le temps à l'animation)
+        // On ne fait updateAIs et updateBombs que toutes les 4 frames (pour l'animation)
         boolean doLogicTick = (System.currentTimeMillis() / 50) % 4 == 0;
         if (doLogicTick) {
             game.updateAIs();
@@ -291,12 +296,12 @@ public class GameController {
             }
         }
         drawGrid();
-
-        // Ajout : détection de la fin de partie
         checkGameOver();
     }
 
-    /** Retour au menu principal */
+    /**
+     * Retour au menu principal.
+     */
     private void returnToMenu() {
         if (gameTimeline != null) gameTimeline.stop();
         if (timerTimeline != null) timerTimeline.stop();
@@ -311,92 +316,71 @@ public class GameController {
         }
     }
 
-    /** Entrées clavier joueurs humains : gère aussi leur direction */
+    /**
+     * Gère les entrées clavier pour les joueurs humains.
+     * @param event Événement clavier
+     */
     private void handleKeyPressed(KeyEvent event) {
         if (game.getPlayers().isEmpty()) return;
         for (int idx = 0; idx < game.getPlayers().size(); idx++) {
             Player p = game.getPlayers().get(idx);
             if (!p.isAlive() || !p.isHuman()) continue;
             switch (idx) {
-                case 0 -> { // Joueur 1 : flèches + espace
-                    switch (event.getCode()) {
-                        case UP    -> {
-                            playerDirections[0] = 1;
-                            game.movePlayer(p, 0, -1);
-                            playerAnims[0].targetX = p.getX();
-                            playerAnims[0].targetY = p.getY();
-                            playerAnims[0].moving = true;
-                        }
-                        case DOWN  -> {
-                            playerDirections[0] = 0;
-                            game.movePlayer(p, 0, 1);
-                            playerAnims[0].targetX = p.getX();
-                            playerAnims[0].targetY = p.getY();
-                            playerAnims[0].moving = true;
-                        }
-                        case LEFT  -> {
-                            playerDirections[0] = 2;
-                            game.movePlayer(p, -1, 0);
-                            playerAnims[0].targetX = p.getX();
-                            playerAnims[0].targetY = p.getY();
-                            playerAnims[0].moving = true;
-                        }
-                        case RIGHT -> {
-                            playerDirections[0] = 3;
-                            game.movePlayer(p, 1, 0);
-                            playerAnims[0].targetX = p.getX();
-                            playerAnims[0].targetY = p.getY();
-                            playerAnims[0].moving = true;
-                        }
-                        case SPACE -> game.placeBomb(p);
-                    }
-                }
-                case 1 -> { // Joueur 2 : ZQSD + shift
-                    switch (event.getCode()) {
-                        case Z     -> {
-                            playerDirections[1] = 1;
-                            game.movePlayer(p, 0, -1);
-                            playerAnims[1].targetX = p.getX();
-                            playerAnims[1].targetY = p.getY();
-                            playerAnims[1].moving = true;
-                        }
-                        case S     -> {
-                            playerDirections[1] = 0;
-                            game.movePlayer(p, 0, 1);
-                            playerAnims[1].targetX = p.getX();
-                            playerAnims[1].targetY = p.getY();
-                            playerAnims[1].moving = true;
-                        }
-                        case Q     -> {
-                            playerDirections[1] = 2;
-                            game.movePlayer(p, -1, 0);
-                            playerAnims[1].targetX = p.getX();
-                            playerAnims[1].targetY = p.getY();
-                            playerAnims[1].moving = true;
-                        }
-                        case D     -> {
-                            playerDirections[1] = 3;
-                            game.movePlayer(p, 1, 0);
-                            playerAnims[1].targetX = p.getX();
-                            playerAnims[1].targetY = p.getY();
-                            playerAnims[1].moving = true;
-                        }
-                        case SHIFT -> game.placeBomb(p);
-                    }
-                }
-                // Ajoutez ici les mappings pour joueurs 3/4 si besoin
+                case 0 -> handlePlayerMovement(event, p, 0, "UP", "DOWN", "LEFT", "RIGHT", "SPACE");
+                case 1 -> handlePlayerMovement(event, p, 1, "Z", "S", "Q", "D", "SHIFT");
+                // Ajouter les mappings pour joueurs 3/4 si besoin
             }
         }
         drawGrid();
     }
 
-    /** Affichage principal du plateau, des joueurs, du timer, etc. */
+    /**
+     * Gère le déplacement du joueur selon les touches associées.
+     */
+    private void handlePlayerMovement(KeyEvent event, Player p, int index, String up, String down, String left, String right, String bombKey) {
+        switch (event.getCode().toString()) {
+            case "UP", "Z" -> {
+                playerDirections[index] = 1;
+                game.movePlayer(p, 0, -1);
+                updatePlayerAnim(index, p);
+            }
+            case "DOWN", "S" -> {
+                playerDirections[index] = 0;
+                game.movePlayer(p, 0, 1);
+                updatePlayerAnim(index, p);
+            }
+            case "LEFT", "Q" -> {
+                playerDirections[index] = 2;
+                game.movePlayer(p, -1, 0);
+                updatePlayerAnim(index, p);
+            }
+            case "RIGHT", "D" -> {
+                playerDirections[index] = 3;
+                game.movePlayer(p, 1, 0);
+                updatePlayerAnim(index, p);
+            }
+            case "SPACE", "SHIFT" -> game.placeBomb(p);
+        }
+    }
+
+    /**
+     * Met à jour l'animation pour le joueur donné.
+     */
+    private void updatePlayerAnim(int idx, Player p) {
+        playerAnims[idx].targetX = p.getX();
+        playerAnims[idx].targetY = p.getY();
+        playerAnims[idx].moving = true;
+    }
+
+    /**
+     * Affichage principal du plateau et de l'interface.
+     */
     private void drawGrid() {
         if (game == null || game.getPlayers().isEmpty()) return;
 
         // Animation des joueurs
         if (playerAnims != null) {
-            double speed = 0.18; // cases par frame, ajustez pour plus ou moins de fluidité
+            double speed = 0.18; // cases par frame
             for (int i = 0; i < game.getPlayers().size(); i++) {
                 PlayerAnim anim = playerAnims[i];
                 if (anim.moving) {
@@ -440,9 +424,9 @@ public class GameController {
 
         double blocksWidth = totalPlayers * (iconSize + counterSize) + (totalPlayers + 1) * spacing + timerWidth;
         double x = (canvasWidth - blocksWidth) / 2.0;
+        int leftPlayers = totalPlayers <= 2 ? 1 : totalPlayers / 2;
 
         // Joueurs gauche
-        int leftPlayers = totalPlayers <= 2 ? 1 : totalPlayers / 2;
         for (int i = 0; i < leftPlayers; i++) {
             drawPlayerBlock(gc, game.getPlayers().get(i), avatarsJoueurs[i], x, (topUiHeight - iconSize) / 2, iconSize, counterSize);
             x += iconSize + counterSize + spacing;
@@ -476,8 +460,7 @@ public class GameController {
             x += iconSize + counterSize + spacing;
         }
 
-        // --- Plateau, bonus, bombes, joueurs, etc ---
-        // Fonds noirs sur les rebords
+        // --- Plateau ---
         gc.setFill(Color.rgb(34, 34, 34));
         gc.fillRect(0, topUiHeight, canvasWidth, borderPixel);
         gc.fillRect(0, topUiHeight + borderPixel + gridHeight * CELL_SIZE, canvasWidth, borderPixel);
@@ -496,18 +479,18 @@ public class GameController {
                     case EXPLOSION -> {
                         ExplosionCell exCell = game.getExplosionCell(xg, y);
                         if (exCell == null) {
-                            gc.drawImage(explosionImg, drawX, drawY, CELL_SIZE, CELL_SIZE); // fallback
+                            gc.drawImage(explosionImg, drawX, drawY, CELL_SIZE, CELL_SIZE);
                         } else if (exCell.type == ExplosionPartType.CENTRE) {
                             gc.drawImage(explosionV2CentreImg, drawX, drawY, CELL_SIZE, CELL_SIZE);
                         } else {
                             gc.save();
-                            double angle = 0;
-                            switch (exCell.direction) {
-                                case UP    -> angle = 0;
-                                case RIGHT -> angle = 90;
-                                case DOWN  -> angle = 180;
-                                case LEFT  -> angle = 270;
-                            }
+                            double angle = switch (exCell.direction) {
+                                case UP -> 0;
+                                case RIGHT -> 90;
+                                case DOWN -> 180;
+                                case LEFT -> 270;
+                                default -> 0;
+                            };
                             gc.translate(drawX + CELL_SIZE / 2, drawY + CELL_SIZE / 2);
                             gc.rotate(angle);
                             gc.translate(-CELL_SIZE / 2, -CELL_SIZE / 2);
@@ -556,7 +539,7 @@ public class GameController {
 
             if (p.getId() == 1) {
                 textX = margin + iconSize + spacing + counterSize + 8;
-                baseY = topUiHeight * 0.6 + 12; // +12 pour baseline texte
+                baseY = topUiHeight * 0.6 + 12;
             } else {
                 textX = canvasWidth - margin - iconSize - spacing - counterSize - 75;
                 baseY = topUiHeight * 0.6 + 12;
@@ -566,36 +549,25 @@ public class GameController {
             double imgSize = iconSize * 0.5;
 
             for (ActiveBonus ab : p.getActiveBonuses()) {
-                String timeStr = ab.getSecondsRemaining() + "s";
-
                 double y = baseY + bonusIndex * lineHeight;
                 double imgY = y - imgSize + (lineHeight - imgSize) / 2 + imgSize * 0.1;
-
-                //gc.setFill(Color.WHITE);
-                //gc.setFont(Font.font("Consolas", iconSize * 0.4));
-                //gc.fillText(timeStr, textX + imgSize + 5, y);
-
                 Image bonusImg = switch (ab.getType()) {
                     case FLAME -> flameBonusImg;
                     case JACKET -> jacketBonusImg;
                     case LIFE -> null;
-                    default -> null;  // obligatoire pour couvrir toutes les valeurs
-
+                    default -> null;
                 };
-
                 if (bonusImg != null) {
                     gc.drawImage(bonusImg, textX-40, imgY, imgSize, imgSize);
                 }
-
                 bonusIndex++;
             }
         }
-
-        // SUPPRIMÉ : bloc qui arrêtait les timelines et appelait checkGameOver()
-        // La gestion de la fin de partie est maintenant uniquement dans updateIAAndGame().
     }
 
-    /** Affiche l'avatar d'un joueur, ses vies, et s'il est IA. */
+    /**
+     * Affiche l'avatar d'un joueur, ses vies, et s'il est IA.
+     */
     private void drawPlayerBlock(GraphicsContext gc, Player player, Image avatar, double x, double y, double iconSize, double counterSize) {
         gc.drawImage(avatar, x, y, iconSize, iconSize);
         double counterX = x + iconSize;
@@ -624,7 +596,11 @@ public class GameController {
         }
     }
 
-    /** DRY : charge une image depuis un chemin ressource ou disque, toujours chemin relatif ressource. */
+    /**
+     * Charge une image depuis les ressources, avec gestion du cache.
+     * @param path Chemin de l'image
+     * @return Image chargée
+     */
     public static Image safeImageFromResource(String path) {
         String fixedPath = path;
         if (fixedPath != null && (fixedPath.contains(":\\") || fixedPath.contains(":/") || fixedPath.startsWith("\\") || fixedPath.startsWith("/"))) {
@@ -633,20 +609,21 @@ public class GameController {
                 fixedPath = "/" + fixedPath.substring(idx).replace("\\", "/");
             }
         }
-        // Gestion du cache
         if (imageCache.containsKey(fixedPath)) {
             return imageCache.get(fixedPath);
         }
         InputStream is = GameController.class.getResourceAsStream(fixedPath);
         if (is == null) {
-            throw new IllegalArgumentException("Image not found in resources: " + fixedPath + " (original: " + path + ")");
+            throw new IllegalArgumentException("Image introuvable dans les ressources : " + fixedPath + " (original : " + path + ")");
         }
         Image img = new Image(is);
         imageCache.put(fixedPath, img);
         return img;
     }
 
-    /** Génère un canvas de preview pour l'écran de sélection de niveau. */
+    /**
+     * Génère un canvas de preview pour l'écran de sélection de niveau.
+     */
     public static Canvas createLevelPreviewCanvas(Level level, int cellSize) {
         int[][] preview = level.getLayout();
         int w = preview[0].length;

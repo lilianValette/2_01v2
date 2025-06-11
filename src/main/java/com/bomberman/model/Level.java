@@ -4,6 +4,9 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
+/**
+ * Représente un niveau du jeu Bomberman, incluant son nom, ses images et sa disposition.
+ */
 public class Level {
     private final String name;
     private final String groundImagePath;
@@ -11,6 +14,14 @@ public class Level {
     private final String wallDestructibleImagePath;
     private final int[][] layout; // 0: sol, 1: mur indestructible, 2: destructible
 
+    /**
+     * Construit un niveau avec ses propriétés.
+     * @param name nom du niveau
+     * @param groundImagePath chemin de l'image du sol
+     * @param wallIndestructibleImagePath chemin image mur indestructible
+     * @param wallDestructibleImagePath chemin image mur destructible
+     * @param layout disposition du niveau
+     */
     public Level(String name, String groundImagePath, String wallIndestructibleImagePath, String wallDestructibleImagePath, int[][] layout) {
         this.name = name;
         this.groundImagePath = normalizeResourcePath(groundImagePath);
@@ -19,13 +30,23 @@ public class Level {
         this.layout = layout;
     }
 
+    /** @return nom du niveau */
     public String getName() { return name; }
+    /** @return chemin image sol */
     public String getGroundImagePath() { return groundImagePath; }
+    /** @return chemin image mur indestructible */
     public String getWallIndestructibleImagePath() { return wallIndestructibleImagePath; }
+    /** @return chemin image mur destructible */
     public String getWallDestructibleImagePath() { return wallDestructibleImagePath; }
+    /** @return disposition du niveau */
     public int[][] getLayout() { return layout; }
 
-    // --- Chargement depuis un fichier .level ---
+    /**
+     * Crée un niveau à partir d'un fichier .level.
+     * @param file chemin du fichier
+     * @return le niveau chargé
+     * @throws IOException en cas d'erreur de lecture
+     */
     public static Level fromFile(Path file) throws IOException {
         List<String> lines = Files.readAllLines(file);
         String name = "", ground = "", ind = "", des = "";
@@ -51,7 +72,11 @@ public class Level {
         return new Level(name, ground, ind, des, layout);
     }
 
-    // --- Sauvegarde dans un fichier .level ---
+    /**
+     * Sauvegarde le niveau dans un fichier .level.
+     * @param file chemin du fichier de destination
+     * @throws IOException en cas d'erreur d'écriture
+     */
     public void saveToFile(Path file) throws IOException {
         try (BufferedWriter w = Files.newBufferedWriter(file)) {
             w.write("name: " + name + "\n");
@@ -66,33 +91,40 @@ public class Level {
         }
     }
 
-    // --- Liste tous les niveaux d'un dossier ---
+    /**
+     * Charge tous les niveaux d'un dossier donné.
+     * @param dir dossier contenant les fichiers .level
+     * @return liste des niveaux chargés
+     * @throws IOException en cas de problème de lecture
+     */
     public static List<Level> loadLevelsFromDirectory(Path dir) throws IOException {
         List<Level> levels = new ArrayList<>();
         if (!Files.exists(dir)) return levels;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "*.level")) {
             for (Path f : stream) {
-                try { levels.add(Level.fromFile(f)); }
-                catch (Exception e) { System.err.println("Erreur chargement niveau: " + f + " : " + e.getMessage()); }
+                try {
+                    levels.add(Level.fromFile(f));
+                } catch (Exception ignored) {
+                    // Ignorer les fichiers invalides, aucun message de debug n'est affiché
+                }
             }
         }
         return levels;
     }
 
-    // --- Correction : normaliser les chemins de ressources ---
+    /**
+     * Normalise le chemin d'une ressource image.
+     * @param path chemin initial
+     * @return chemin normalisé commençant par /
+     */
     private static String normalizeResourcePath(String path) {
         if (path == null) return null;
-        // Toujours commencer par /
         String p = path.startsWith("/") ? path : "/" + path;
-        // Correction extension PNG en minuscule
         p = p.replaceAll("\\.PNG$", ".png");
-        // Correction noms courants pour la casse
-        // (à adapter selon les vrais fichiers dans ton dossier !)
         p = p.replace("BonhommeNeige", "bonhommeNeige");
         p = p.replace("MurDestructible", "murDestructible");
         p = p.replace("MurIndestructible", "murIndestructible");
         p = p.replace("FondFeuilles", "fondFeuilles");
-        // Ajoute d'autres corrections si besoin...
         return p;
     }
 }

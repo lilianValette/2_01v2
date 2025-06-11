@@ -36,32 +36,32 @@
                 <VBox alignment="TOP_CENTER" spacing="14.0">
                     <children>
                         <Label text="PALETTE" styleClass="section-title"/>
-                        <ToggleButton fx:id="emptyButton" text="VIDE" styleClass="palette-toggle"
+                        <ToggleButton fx:id="emptyButton" text="EMPTY" styleClass="palette-toggle"
                                       prefWidth="200"/>
-                        <ToggleButton fx:id="wallButton" text="MUR SOLIDE" styleClass="palette-toggle"
+                        <ToggleButton fx:id="wallButton" text="SOLID" styleClass="palette-toggle"
                                       prefWidth="200"/>
-                        <ToggleButton fx:id="breakableButton" text="MUR CASSABLE" styleClass="palette-toggle"
+                        <ToggleButton fx:id="breakableButton" text="BREAK" styleClass="palette-toggle"
                                       prefWidth="250"/>
                         <Separator prefWidth="180"/>
-                        <Label text="Images des blocs :" styleClass="editor-label"/>
+                        <Label text="Block images:" styleClass="editor-label"/>
                         <VBox alignment="TOP_CENTER" spacing="9.0">
                             <children>
                                 <VBox alignment="CENTER" spacing="2.0">
-                                    <Label text="Sol" styleClass="editor-label"/>
+                                    <Label text="Ground" styleClass="editor-label"/>
                                     <ImageView fx:id="groundPreview" fitWidth="32" fitHeight="32"/>
-                                    <Button fx:id="chooseGroundBtn" text="Choisir l'image"
+                                    <Button fx:id="chooseGroundBtn" text="Choose image"
                                             prefWidth="250"/>
                                 </VBox>
                                 <VBox alignment="CENTER" spacing="2.0">
-                                    <Label text="Mur solide" styleClass="editor-label"/>
+                                    <Label text="Indestructible wall" styleClass="editor-label"/>
                                     <ImageView fx:id="indestructiblePreview" fitWidth="32" fitHeight="32"/>
-                                    <Button fx:id="chooseIndestructibleBtn" text="Choisir l'image"
+                                    <Button fx:id="chooseIndestructibleBtn" text="Choose image"
                                             prefWidth="250"/>
                                 </VBox>
                                 <VBox alignment="CENTER" spacing="2.0">
-                                    <Label text="Mur cassable" styleClass="editor-label"/>
+                                    <Label text="Destructible wall" styleClass="editor-label"/>
                                     <ImageView fx:id="destructiblePreview" fitWidth="32" fitHeight="32"/>
-                                    <Button fx:id="chooseDestructibleBtn" text="Choisir l'image"
+                                    <Button fx:id="chooseDestructibleBtn" text="Choose image"
                                             prefWidth="250"/>
                                 </VBox>
                             </children>
@@ -91,10 +91,10 @@
         <bottom>
             <HBox alignment="CENTER" spacing="18.0" styleClass="footer-section">
                 <children>
-                    <Button fx:id="clearButton" styleClass="game-button-secondary" text="EFFACER" minWidth="140"/>
-                    <Button fx:id="saveButton" styleClass="game-button-primary" text="SAUVEGARDER" minWidth="180"/>
-                    <Button fx:id="loadButton" styleClass="game-button-primary" text="CHARGER" minWidth="140"/>
-                    <Button fx:id="backButton" styleClass="game-button-secondary" text="RETOUR" minWidth="110"/>
+                    <Button fx:id="clearButton" styleClass="game-button-secondary" text="CLEAR" minWidth="140"/>
+                    <Button fx:id="saveButton" styleClass="game-button-primary" text="SAVE" minWidth="180"/>
+                    <Button fx:id="loadButton" styleClass="game-button-primary" text="LOAD" minWidth="140"/>
+                    <Button fx:id="backButton" styleClass="game-button-secondary" text="BACK" minWidth="110"/>
                 </children>
                 <padding>
                     <Insets bottom="8.0" top="8.0" />

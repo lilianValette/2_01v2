@@ -1,22 +1,27 @@
 package com.bomberman.model;
-import java.io.*;
+
+import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
 
 /**
- * Gestionnaire des comptes utilisateurs avec sauvegarde/chargement depuis fichier.
+ * Singleton pour la gestion des comptes utilisateurs avec persistance sur fichier texte.
  */
 public class UserManager {
     private static final String USERS_FILE = "users.txt";
     private static UserManager instance;
-    private Map<String, User> users;
+    private final Map<String, User> users = new HashMap<>();
     private User currentUser;
 
     private UserManager() {
-        users = new HashMap<>();
         loadUsers();
     }
 
+    /**
+     * Retourne l'instance unique du gestionnaire d'utilisateurs.
+     *
+     * @return instance de UserManager
+     */
     public static UserManager getInstance() {
         if (instance == null) {
             instance = new UserManager();
@@ -25,29 +30,29 @@ public class UserManager {
     }
 
     /**
-     * Charge les utilisateurs depuis le fichier.
+     * Charge les utilisateurs depuis le fichier de sauvegarde.
      */
     private void loadUsers() {
-        try {
-            Path path = Paths.get(USERS_FILE);
-            if (Files.exists(path)) {
+        Path path = Paths.get(USERS_FILE);
+        if (Files.exists(path)) {
+            try {
                 List<String> lines = Files.readAllLines(path);
                 for (String line : lines) {
-                    if (!line.trim().isEmpty()) {
+                    if (!line.isBlank()) {
                         User user = User.fromString(line);
                         if (user != null) {
                             users.put(user.getUsername(), user);
                         }
                     }
                 }
+            } catch (IOException e) {
+                System.err.println("Erreur lors du chargement des utilisateurs : " + e.getMessage());
             }
-        } catch (IOException e) {
-            System.err.println("Erreur lors du chargement des utilisateurs : " + e.getMessage());
         }
     }
 
     /**
-     * Sauvegarde les utilisateurs dans le fichier.
+     * Sauvegarde tous les utilisateurs dans le fichier.
      */
     private void saveUsers() {
         try {
@@ -63,31 +68,26 @@ public class UserManager {
 
     /**
      * Crée un nouveau compte utilisateur.
+     *
      * @param username nom d'utilisateur
      * @param password mot de passe
-     * @return true si le compte a été créé avec succès, false si le nom d'utilisateur existe déjà
+     * @return true si l'utilisateur a été créé, false si déjà existant ou champs invalides
      */
     public boolean createAccount(String username, String password) {
-        if (username == null || username.trim().isEmpty() ||
-                password == null || password.trim().isEmpty()) {
+        if (username == null || username.isBlank() || password == null || password.isBlank() || users.containsKey(username)) {
             return false;
         }
-
-        if (users.containsKey(username)) {
-            return false; // Utilisateur déjà existant
-        }
-
-        User newUser = new User(username, password);
-        users.put(username, newUser);
+        users.put(username, new User(username, password));
         saveUsers();
         return true;
     }
 
     /**
      * Authentifie un utilisateur.
+     *
      * @param username nom d'utilisateur
      * @param password mot de passe
-     * @return true si l'authentification réussit
+     * @return true si la connexion réussit, false sinon
      */
     public boolean login(String username, String password) {
         User user = users.get(username);
@@ -106,14 +106,18 @@ public class UserManager {
     }
 
     /**
-     * @return l'utilisateur actuellement connecté, ou null si aucun
+     * Retourne l'utilisateur actuellement connecté.
+     *
+     * @return utilisateur connecté ou null
      */
     public User getCurrentUser() {
         return currentUser;
     }
 
     /**
-     * @return true si un utilisateur est connecté
+     * Indique si un utilisateur est actuellement connecté.
+     *
+     * @return true si connecté, false sinon
      */
     public boolean isLoggedIn() {
         return currentUser != null;
@@ -121,13 +125,19 @@ public class UserManager {
 
     /**
      * Vérifie si un nom d'utilisateur existe déjà.
+     *
+     * @param username nom d'utilisateur
+     * @return true si l'utilisateur existe
      */
     public boolean userExists(String username) {
         return users.containsKey(username);
     }
 
     /**
-     * Met à jour les statistiques de l'utilisateur actuel et sauvegarde.
+     * Met à jour les statistiques de l'utilisateur connecté, puis sauvegarde.
+     *
+     * @param won   true si la partie est gagnée
+     * @param score score à ajouter
      */
     public void updateCurrentUserStats(boolean won, int score) {
         if (currentUser != null) {

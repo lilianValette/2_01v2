@@ -11,18 +11,16 @@
            styleClass="main-background"
            stylesheets="@style/settings-menu.css">
 
-    <!-- Fond -->
     <ImageView fx:id="backgroundImage"
                fitHeight="600.0" fitWidth="800.0"
                pickOnBounds="true" preserveRatio="false" />
 
     <BorderPane>
-        <!-- Header -->
         <top>
             <VBox alignment="CENTER" spacing="20.0" styleClass="header-section">
                 <children>
                     <Text styleClass="page-title"
-                          text="PARAMÈTRES"
+                          text="SETTINGS"
                           textAlignment="CENTER"
                           fill="WHITE"/>
                 </children>
@@ -31,22 +29,19 @@
                 </padding>
             </VBox>
         </top>
-        <!-- Centre -->
         <center>
             <VBox alignment="CENTER" spacing="30.0">
                 <VBox alignment="CENTER" spacing="22.0" styleClass="settings-menu-container" maxWidth="720" minWidth="720">
-                    <!-- Bouton principal -->
                     <Button fx:id="levelEditorButton"
                             text="LEVEL EDITOR"
                             styleClass="menu-button"
                             maxWidth="Infinity"/>
-                    <!-- Sélecteur niveau IA -->
                     <HBox fx:id="aiLevelBox"
                           alignment="CENTER"
                           spacing="16"
                           styleClass="hbox">
                         <Label fx:id="aiLevelTextLabel"
-                               text="NIVEAU DES IA"
+                               text="AI LEVEL"
                                styleClass="menu-label"
                                maxWidth="Infinity"/>
                         <Label fx:id="aiLevelLeftArrow"
@@ -62,11 +57,10 @@
                 </VBox>
             </VBox>
         </center>
-        <!-- Bas : bouton retour -->
         <bottom>
             <HBox alignment="CENTER" spacing="20.0" styleClass="footer-section">
                 <children>
-                    <Button fx:id="backButton" styleClass="game-button-secondary" text="RETOUR AU MENU" />
+                    <Button fx:id="backButton" styleClass="game-button-secondary" text="BACK TO MENU" />
                 </children>
                 <padding>
                     <Insets bottom="30.0" top="20.0" />

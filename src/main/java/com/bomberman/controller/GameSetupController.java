@@ -21,10 +21,15 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Contrôleur de l'écran de configuration de partie.
+ * Permet de sélectionner le nombre de joueurs, d'IAs, le niveau et de lancer la partie.
+ * Tous les messages d'erreur et commentaires sont en français, l'interface utilisateur reste en anglais.
+ */
 public class GameSetupController {
 
     @FXML private StackPane themePreviewPane;
-    @FXML private Label backButton; // Nouveau bouton de retour
+    @FXML private Label backButton;
     @FXML private Label
             playerTextLabel, iaTextLabel, themeTextLabel, playTextLabel,
             playerLeftArrow, playerRightArrow,
@@ -38,28 +43,42 @@ public class GameSetupController {
     private final Level[] levels = loadAllLevels();
 
     private Stage stage;
-    private int selectedField = 0; // 0 = player, 1 = ia, 2 = theme, 3 = PLAY, 4 = BACK
+    private int selectedField = 0; // 0 = joueur, 1 = IA, 2 = niveau, 3 = JOUER, 4 = RETOUR
 
+    /**
+     * Charge tous les niveaux présents dans les dossiers predefined et custom.
+     */
     private Level[] loadAllLevels() {
         List<Level> allLevels = new ArrayList<>();
         try {
             allLevels.addAll(Level.loadLevelsFromDirectory(
                     Path.of("src/main/resources/levels/predefined")
             ));
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement des niveaux prédéfinis : " + e.getMessage());
+        }
         try {
             allLevels.addAll(Level.loadLevelsFromDirectory(
                     Path.of("src/main/resources/levels/custom")
             ));
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement des niveaux personnalisés : " + e.getMessage());
+        }
         return allLevels.toArray(new Level[0]);
     }
 
+    /**
+     * Définit la fenêtre principale et adapte sa taille au canvas de preview.
+     * @param stage La fenêtre principale JavaFX
+     */
     public void setStage(Stage stage) {
         this.stage = stage;
         Platform.runLater(this::adaptStageToPreview);
     }
 
+    /**
+     * Initialise l'écran de configuration de partie.
+     */
     @FXML
     public void initialize() {
         updateUI();
@@ -67,11 +86,9 @@ public class GameSetupController {
         playTextLabel.setOnMouseClicked(e -> startGame());
         playTextLabel.setOnMouseEntered(e -> { selectedField = 3; updateHighlight(); });
 
-        // Ajout du bouton de retour
         backButton.setOnMouseClicked(e -> goBackToMenu());
         backButton.setOnMouseEntered(e -> { selectedField = 4; updateHighlight(); });
 
-        // Flèches cliquables en plus du clavier (UX bonus)
         playerLeftArrow.setOnMouseClicked(e -> { selectedField = 0; decrementSelected(); });
         playerRightArrow.setOnMouseClicked(e -> { selectedField = 0; incrementSelected(); });
         iaLeftArrow.setOnMouseClicked(e -> { selectedField = 1; decrementSelected(); });
@@ -86,6 +103,9 @@ public class GameSetupController {
         });
     }
 
+    /**
+     * Gère la visibilité des flèches de sélection selon les valeurs courantes.
+     */
     private void setupArrowsVisibility() {
         playerLeftArrow.visibleProperty().bind(Bindings.createBooleanBinding(
                 () -> playerCount.get() > (iaCount.get() == 0 ? 2 : 1),
@@ -102,13 +122,15 @@ public class GameSetupController {
         themeRightArrow.setVisible(hasMultipleLevels);
     }
 
+    /**
+     * Met à jour la surbrillance du champ sélectionné.
+     */
     private void updateHighlight() {
-        // Enlever tous les surlignages
         playerTextLabel.getStyleClass().removeAll("menu-highlighted");
         iaTextLabel.getStyleClass().removeAll("menu-highlighted");
         themeTextLabel.getStyleClass().removeAll("menu-highlighted");
         playTextLabel.getStyleClass().removeAll("menu-highlighted");
-        backButton.getStyleClass().removeAll("back-highlighted"); // Nouveau
+        backButton.getStyleClass().removeAll("back-highlighted");
         playerCountLabel.getStyleClass().removeAll("value-highlighted");
         iaCountLabel.getStyleClass().removeAll("value-highlighted");
         themeLabel.getStyleClass().removeAll("value-highlighted");
@@ -127,10 +149,13 @@ public class GameSetupController {
                 themeLabel.getStyleClass().add("value-highlighted");
             }
             case 3 -> playTextLabel.getStyleClass().add("menu-highlighted");
-            case 4 -> backButton.getStyleClass().add("back-highlighted"); // Nouveau
+            case 4 -> backButton.getStyleClass().add("back-highlighted");
         }
     }
 
+    /**
+     * Met à jour l'affichage des labels et du preview.
+     */
     private void updateUI() {
         if (levels.length == 0) {
             themeLabel.setText("AUCUN NIVEAU");
@@ -144,6 +169,9 @@ public class GameSetupController {
         updateHighlight();
     }
 
+    /**
+     * Affiche le canvas de prévisualisation du niveau sélectionné.
+     */
     private void showLevelPreview(Level level) {
         themePreviewPane.getChildren().clear();
         Canvas preview = GameController.createLevelPreviewCanvas(level, GameController.getCellSize());
@@ -159,12 +187,14 @@ public class GameSetupController {
         Platform.runLater(this::adaptStageToPreview);
     }
 
+    /**
+     * Adapte la fenêtre à la taille du canvas de preview.
+     */
     private void adaptStageToPreview() {
         if (stage != null && !themePreviewPane.getChildren().isEmpty()) {
             Canvas preview = (Canvas) themePreviewPane.getChildren().get(0);
             double w = preview.getWidth();
             double h = preview.getHeight();
-
             double fudge = 0.5;
             if (w > 0 && h > 0) {
                 stage.setMinWidth(w + fudge);
@@ -179,7 +209,7 @@ public class GameSetupController {
     }
 
     /**
-     * Retourne au menu principal
+     * Retourne au menu principal.
      */
     private void goBackToMenu() {
         try {
@@ -189,11 +219,13 @@ public class GameSetupController {
             menuController.setStage(stage);
             stage.setScene(new Scene(root));
         } catch (Exception e) {
-            e.printStackTrace();
             System.err.println("Erreur lors du retour au menu : " + e.getMessage());
         }
     }
 
+    /**
+     * Démarre la partie avec les paramètres sélectionnés.
+     */
     private void startGame() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bomberman/view/game-view.fxml"));
@@ -203,15 +235,17 @@ public class GameSetupController {
             gameController.setLevel(levels[levelIndex.get()]);
             gameController.setPlayerCount(playerCount.get());
             gameController.setIaCount(iaCount.get());
-            // Utilise la difficulté IA GLOBALE
             gameController.setAIDifficulty(GameSettings.getSelectedAIDifficulty());
             gameController.startGame();
             stage.setScene(new Scene(root));
         } catch (Exception ex) {
-            ex.printStackTrace();
+            System.err.println("Erreur lors du lancement de la partie : " + ex.getMessage());
         }
     }
 
+    /**
+     * Gère les actions clavier pour la navigation et la sélection.
+     */
     private void handleArrowKey(KeyEvent event) {
         switch (event.getCode()) {
             case UP    -> { selectedField = (selectedField + 4) % 5; updateHighlight(); }
@@ -228,6 +262,9 @@ public class GameSetupController {
         event.consume();
     }
 
+    /**
+     * Décrémente la valeur du champ sélectionné (joueur, IA, niveau).
+     */
     private void decrementSelected() {
         switch (selectedField) {
             case 0 -> {
@@ -254,6 +291,9 @@ public class GameSetupController {
         }
     }
 
+    /**
+     * Incrémente la valeur du champ sélectionné (joueur, IA, niveau).
+     */
     private void incrementSelected() {
         switch (selectedField) {
             case 0 -> {

@@ -11,26 +11,21 @@
            fx:id="rootPane"
            stylesheets="@style/menu-style.css">
 
-    <!-- Fond du menu -->
     <ImageView fx:id="backgroundImage"
                fitWidth="800"
                fitHeight="600"
                preserveRatio="false"
                StackPane.alignment="CENTER"/>
 
-    <!-- Dirigeable (avion) -->
     <ImageView fx:id="planeImage"
                preserveRatio="true"
                StackPane.alignment="TOP_LEFT"/>
 
-    <!-- Mongolfière -->
     <ImageView fx:id="balloonImage"
                preserveRatio="true"
                StackPane.alignment="TOP_RIGHT"/>
 
-    <!-- Centre : logo + menu -->
     <VBox spacing="16" alignment="CENTER" StackPane.alignment="CENTER">
-        <!-- Logo Bomberman -->
         <ImageView fx:id="logoImage"
                    fitWidth="550"
                    fitHeight="250"/>

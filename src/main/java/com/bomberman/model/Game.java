@@ -16,7 +16,7 @@ public class Game {
     private List<Bomb> bombs = new ArrayList<>();
     private List<Bonus> bonuses = new ArrayList<>();
     private List<Explosion> explosions = new ArrayList<>();
-    private final AIDifficulty aiDifficulty; // Ajouté
+    private final AIDifficulty aiDifficulty;
 
     // --- TYPES EXPLOSION POUR AFFICHAGE ---
     public enum ExplosionPartType { CENTRE, BRANCH, END }
@@ -59,7 +59,6 @@ public class Game {
         this.winner = null;
         this.aiDifficulty = aiDifficulty;
         initializePlayers(playerCount, iaCount);
-
     }
 
     private void initializePlayers(int humanCount, int iaCount) {
@@ -86,7 +85,7 @@ public class Game {
             int x = startPositions[index][0];
             int y = startPositions[index][1];
             clearSpawnZoneOnly(x, y);
-            PlayerAI ia = new PlayerAI(index + 1, x, y, aiDifficulty); // Passe la difficulté ici
+            PlayerAI ia = new PlayerAI(index + 1, x, y, aiDifficulty);
             players.add(ia);
         }
     }
@@ -107,7 +106,7 @@ public class Game {
     public void updateAIs() {
         for (Player p : players) {
             if (p instanceof PlayerAI ai) {
-                ai.updateAI(grid, bombs, players); // Passe la liste des joueurs pour comportement avancé
+                ai.updateAI(grid, bombs, players);
             }
         }
     }
@@ -135,6 +134,12 @@ public class Game {
 
     public void placeBomb(Player player) {
         if (!player.isAlive()) return;
+        // Vérifier si le joueur a déjà une bombe sur la grille
+        boolean bombeDejaPosee = bombs.stream()
+                .anyMatch(b -> b.getOwner() == player && !b.isExploded());
+        if (bombeDejaPosee) return;
+
+        // Vérifie s'il y a déjà une bombe à cet endroit
         for (Bomb b : bombs) {
             if (b.getX() == player.getX() && b.getY() == player.getY()) {
                 return;
@@ -188,14 +193,13 @@ public class Game {
                 p.updateActiveBonuses();
             }
         }
-        // Nettoyage des centres d'explosion qui ne sont plus actifs (plus d'explosion à cet endroit)
+        // Nettoyage des centres d'explosion qui ne sont plus actifs
         explosionCenters.removeIf(ec ->
                 explosions.stream().noneMatch(exp -> exp.x == ec.x && exp.y == ec.y && exp.ticksRemaining > 0)
         );
         updateGameState();
     }
 
-    // Ajout : incrémentation de la frame et enregistrement du centre
     private void addExplosion(int x, int y, boolean isCenter) {
         grid.setCell(x, y, Grid.CellType.EXPLOSION);
         explosions.add(new Explosion(x, y, 2));
@@ -203,10 +207,11 @@ public class Game {
             explosionCenters.add(new ExplosionCenter(x, y, explosionFrameCounter));
         }
     }
+
     private void explode(Bomb b) {
         int x = b.getX(), y = b.getY(), range = b.getRange();
-        explosionFrameCounter++; // incrémente à chaque nouvelle explosion centrale
-        addExplosion(x, y, true); // true => centre
+        explosionFrameCounter++;
+        addExplosion(x, y, true);
         damagePlayersAt(x, y);
 
         int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}};
@@ -216,7 +221,7 @@ public class Game {
                 if (!grid.isInBounds(nx, ny)) break;
                 Grid.CellType c = grid.getCell(nx, ny);
                 if (c == Grid.CellType.INDESTRUCTIBLE) break;
-                addExplosion(nx, ny, false); // false => branche
+                addExplosion(nx, ny, false);
                 damagePlayersAt(nx, ny);
                 if (c == Grid.CellType.DESTRUCTIBLE) {
                     destroyWall(nx, ny);
@@ -232,6 +237,7 @@ public class Game {
             }
         }
     }
+
     private void damagePlayersAt(int x, int y) {
         for (Player p : players) {
             if (p.isAlive() && p.getX() == x && p.getY() == y) {
@@ -241,25 +247,24 @@ public class Game {
             }
         }
     }
+
     private void destroyWall(int x, int y) {
-        if (Math.random() < 0.2) {
-            int bonusType = (int) (Math.random() * 3);
-            switch (bonusType) {
-                case 0 -> bonuses.add(new FlameBonus(x, y, 1));
-                case 1 -> bonuses.add(new JacketBonus(x, y));
-                case 2 -> bonuses.add(new LifeBonus(x, y));
+        if (Math.random() < 0.33) { // 33% de chances d'avoir un bonus
+            double roll = Math.random();
+            if (roll < 0.6) {
+                bonuses.add(new FlameBonus(x, y, 1));
+            } else if (roll < 0.85) {
+                bonuses.add(new JacketBonus(x, y));
+            } else {
+                bonuses.add(new LifeBonus(x, y));
             }
         }
     }
 
-    // ----------- NOUVEAU : pour affichage explosion façon Bomberman -----------
     /**
      * Retourne le type et la direction de la partie d'explosion pour la case (x, y), ou null si pas d'explosion.
      * Ne retourne CENTRE que pour la case où une bombe a explosé.
-     * Jamais de branche ni de fin sur la case centre.
      */
-    // Remplace uniquement la méthode getExplosionCell par celle-ci
-
     public ExplosionCell getExplosionCell(int x, int y) {
         if (grid.getCell(x, y) != Grid.CellType.EXPLOSION) return null;
 
@@ -287,7 +292,6 @@ public class Game {
                 case 2 -> { dy = 1; dir = Direction.DOWN; }
                 case 3 -> { dy = -1; dir = Direction.UP; }
             }
-            // On remonte jusqu'à trouver un centre, en s'arrêtant si mur ou case vide
             int cx = x;
             int cy = y;
             boolean foundCenter = false;
@@ -298,7 +302,6 @@ public class Game {
                 steps++;
                 if (!grid.isInBounds(cx, cy)) break;
                 if (grid.getCell(cx, cy) != Grid.CellType.EXPLOSION) break;
-                // Est-ce un centre actif ?
                 for (ExplosionCenter ec : explosionCenters) {
                     if (ec.x == cx && ec.y == cy) {
                         boolean stillAlive = false;
@@ -317,8 +320,6 @@ public class Game {
                 if (foundCenter) break;
             }
             if (foundCenter) {
-                // On est bien dans une branche venant d'un centre, dans la direction d
-                // Vérifie si c'est une fin : la suivante dans la même direction N'EST PAS explosion
                 int nx = x + dx;
                 int ny = y + dy;
                 boolean isEnd = (!grid.isInBounds(nx, ny) || grid.getCell(nx, ny) != Grid.CellType.EXPLOSION);
@@ -329,8 +330,6 @@ public class Game {
                 }
             }
         }
-        // Si aucune branche détectée, branche droite (par défaut, ne devrait jamais arriver)
         return new ExplosionCell(ExplosionPartType.BRANCH, Direction.RIGHT);
     }
-    // --------------------------------------------------------------------------
 }

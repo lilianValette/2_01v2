@@ -14,8 +14,8 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 /**
- * Contrôleur du menu principal du jeu Bomberman.
- * Gère l'affichage du menu, les animations et la navigation vers l'écran de configuration de partie.
+ * Contrôleur du menu principal de Bomberman.
+ * Gère la navigation, l'affichage des images et l'animation de l'écran principal.
  */
 public class MenuController {
 
@@ -35,8 +35,8 @@ public class MenuController {
     private Timeline balloonTimeline;
 
     /**
-     * Définit le stage principal et adapte la fenêtre à la taille de l'image de fond.
-     * @param stage Stage principal
+     * Définit la fenêtre principale JavaFX et adapte sa taille à l'image de fond.
+     * @param stage Fenêtre principale de l'application
      */
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -53,24 +53,22 @@ public class MenuController {
         balloonImage.setImage(loadImage("/images/menu/Bomber_balloon-removebg-preview.png"));
         logoImage.setImage(loadImage("/images/menu/logo.gif"));
 
-        planeImage.setFitWidth(400);    // Taille du dirigeable
-        balloonImage.setFitWidth(140);  // Taille du ballon
+        planeImage.setFitWidth(400);
+        balloonImage.setFitWidth(140);
 
-        // Adapter la fenêtre à la taille de l’image de fond si elle change
         backgroundImage.imageProperty().addListener((obs, oldImg, newImg) -> adaptStageToBackgroundImage());
         adaptStageToBackgroundImage();
 
         playButton.setOnAction(e -> startGameSetup());
-        accountButton.setOnAction(e -> onAccount());
-        settingsButton.setOnAction(e -> onSettings());
+        accountButton.setOnAction(e -> openAccount());
+        settingsButton.setOnAction(e -> openSettings());
         quitButton.setOnAction(e -> System.exit(0));
 
-        // Lancer les animations lors du redimensionnement
         rootPane.widthProperty().addListener((obs, oldVal, newVal) -> startAnimations(newVal.doubleValue()));
     }
 
     /**
-     * Ajuste la fenêtre à la taille de l’ImageView du fond (définie en FXML).
+     * Adapte la taille de la fenêtre à celle de l'image de fond.
      */
     private void adaptStageToBackgroundImage() {
         if (stage != null && backgroundImage != null) {
@@ -89,10 +87,11 @@ public class MenuController {
     }
 
     /**
-     * Démarre les animations des éléments graphiques du menu.
-     * @param paneWidth largeur du panel principal
+     * Lance les animations du dirigeable et du ballon.
+     * @param paneWidth Largeur du panneau principal
      */
     private void startAnimations(double paneWidth) {
+        // Animation du dirigeable
         planeImage.setScaleX(1);
         planeImage.setTranslateY(30);
         double planeWidth = planeImage.getFitWidth();
@@ -101,21 +100,18 @@ public class MenuController {
         double planeDuration = 14.0;
         double planeTotalDistance = planeStartX - planeEndX;
         double planeSpeedPerFrame = planeTotalDistance / (planeDuration * 60.0);
-
         planeImage.setTranslateX(planeStartX);
 
         if (planeTimeline != null) planeTimeline.stop();
         planeTimeline = new Timeline(new KeyFrame(Duration.millis(1000.0/60.0), e -> {
-            double currentX = planeImage.getTranslateX();
-            currentX -= planeSpeedPerFrame;
-            if (currentX <= planeEndX) {
-                currentX = planeStartX;
-            }
+            double currentX = planeImage.getTranslateX() - planeSpeedPerFrame;
+            if (currentX <= planeEndX) currentX = planeStartX;
             planeImage.setTranslateX(currentX);
         }));
         planeTimeline.setCycleCount(Timeline.INDEFINITE);
         planeTimeline.play();
 
+        // Animation du ballon
         balloonImage.setScaleX(1);
         double balloonWidth = balloonImage.getFitWidth();
         double balloonStartX = -paneWidth / 2 - (balloonWidth + 300);
@@ -123,7 +119,6 @@ public class MenuController {
         double balloonDuration = 22.0;
         double balloonTotalDistance = balloonEndX - balloonStartX;
         double balloonSpeedPerFrame = balloonTotalDistance / (balloonDuration * 60.0);
-
         double balloonBaseY = 160;
         double oscillationAmplitude = 18.0;
         double oscillationFrequency = 0.7;
@@ -133,8 +128,7 @@ public class MenuController {
         if (balloonTimeline != null) balloonTimeline.stop();
         final double[] balloonFrame = {0};
         balloonTimeline = new Timeline(new KeyFrame(Duration.millis(1000.0/60.0), e -> {
-            double currentX = balloonImage.getTranslateX();
-            currentX += balloonSpeedPerFrame;
+            double currentX = balloonImage.getTranslateX() + balloonSpeedPerFrame;
             if (currentX >= balloonEndX) {
                 currentX = balloonStartX;
                 balloonFrame[0] = 0;
@@ -150,8 +144,7 @@ public class MenuController {
     }
 
     /**
-     * Passe à l'écran de configuration de partie en réutilisant la même fenêtre
-     * et adapte sa taille en fonction du contenu affiché par GameSetupController.
+     * Ouvre l'écran de configuration de la partie.
      */
     @FXML
     private void startGameSetup() {
@@ -159,22 +152,17 @@ public class MenuController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bomberman/view/game-setup.fxml"));
             Parent root = loader.load();
             GameSetupController controller = loader.getController();
-
-            // Passe le même stage à GameSetupController pour permettre l'adaptation dynamique
             controller.setStage(stage);
-
-            // Remplace la scène actuelle par celle du setup
             stage.setScene(new Scene(root));
         } catch (Exception e) {
-            e.printStackTrace();
-            // Optionnel : afficher une pop-up d'erreur à l'utilisateur
+            System.err.println("Erreur lors du chargement de l'écran de configuration de partie : " + e.getMessage());
         }
     }
 
     /**
-     * Action sur le bouton "Compte".
+     * Ouvre l'écran de gestion des comptes.
      */
-    private void onAccount() {
+    private void openAccount() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bomberman/view/account.fxml"));
             Parent root = loader.load();
@@ -184,40 +172,34 @@ public class MenuController {
             }
             stage.setScene(new Scene(root));
         } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Erreur lors du chargement de la page des comptes : " + e.getMessage());
+            System.err.println("Erreur lors du chargement de l'écran de comptes : " + e.getMessage());
         }
     }
 
     /**
-     * Action sur le bouton "Paramètres".
+     * Ouvre l'écran des paramètres.
      */
-    private void onSettings() {
+    private void openSettings() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bomberman/view/settings.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root);
-
-            // Appliquer le CSS principal si besoin
             java.net.URL cssUrl = getClass().getResource("/css/style.css");
             if (cssUrl != null) {
                 scene.getStylesheets().add(cssUrl.toExternalForm());
             }
-
             SettingsController controller = loader.getController();
             controller.setStage(stage);
-
             stage.setScene(scene);
         } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Erreur lors du chargement de la page des paramètres : " + e.getMessage());
+            System.err.println("Erreur lors du chargement de l'écran des paramètres : " + e.getMessage());
         }
     }
 
     /**
      * Charge une image à partir des ressources.
-     * @param resourcePath chemin vers la ressource
-     * @return l'image chargée, ou null si introuvable
+     * @param resourcePath Chemin de la ressource
+     * @return Image chargée, ou null si non trouvée
      */
     private Image loadImage(String resourcePath) {
         java.net.URL url = getClass().getResource(resourcePath);

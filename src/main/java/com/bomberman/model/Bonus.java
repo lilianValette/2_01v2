@@ -30,6 +30,7 @@ public abstract class Bonus {
         this.collected = false;
         loadSprite(resource);
     }
+
     public Image getSprite() {
         return sprite;
     }
@@ -45,7 +46,7 @@ public abstract class Bonus {
                 sprite = new Image(is);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            // Aucun message de debug dans la console selon les consignes
             sprite = null;
         }
     }
@@ -58,7 +59,6 @@ public abstract class Bonus {
     public void setCollected(boolean collected) {
         this.collected = collected;
     }
-
 
     /** @return la coordonnée X (en tiles) du bonus */
     public int getX() {

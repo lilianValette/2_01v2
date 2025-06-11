@@ -11,20 +11,16 @@
            fx:controller="com.bomberman.controller.AccountController"
            styleClass="main-background"
            stylesheets="@style/account-style.css">
-    <!-- Image de fond -->
     <ImageView fx:id="backgroundImage"
                fitHeight="600.0" fitWidth="800.0"
                pickOnBounds="true" preserveRatio="false" />
 
-    <!-- Interface principale -->
     <BorderPane>
-        <!-- En-tête -->
         <top>
             <VBox alignment="CENTER" spacing="20.0" styleClass="header-section">
                 <children>
-                    <!-- TITRE PRINCIPAL BLANC -->
                     <Text styleClass="page-title"
-                          text="GESTION DES COMPTES"
+                          text="ACCOUNT MANAGEMENT"
                           textAlignment="CENTER"
                           fill="WHITE"/>
                 </children>
@@ -34,40 +30,36 @@
             </VBox>
         </top>
 
-        <!-- Contenu central -->
         <center>
             <StackPane>
-                <!-- Vue de connexion -->
                 <StackPane fx:id="loginContainer" visible="true">
                     <VBox alignment="CENTER" spacing="30.0" styleClass="form-container">
                         <children>
-                            <!-- SOUS-TITRE BLANC -->
                             <Text styleClass="section-title"
-                                  text="CONNEXION"
+                                  text="LOGIN"
                                   fill="WHITE"/>
                             <VBox alignment="CENTER" spacing="15.0" styleClass="form-fields">
                                 <children>
                                     <VBox spacing="5.0">
                                         <children>
-                                            <Label styleClass="field-label" text="Nom d'utilisateur :" />
-                                            <TextField fx:id="loginUsername" promptText="Entrez votre nom d'utilisateur" styleClass="game-textfield" />
+                                            <Label styleClass="field-label" text="Username:" />
+                                            <TextField fx:id="loginUsername" promptText="Enter your username" styleClass="game-textfield" />
                                         </children>
                                     </VBox>
                                     <VBox spacing="5.0">
                                         <children>
-                                            <Label styleClass="field-label" text="Mot de passe :" />
-                                            <PasswordField fx:id="loginPassword" promptText="Entrez votre mot de passe" styleClass="game-password-field" />
+                                            <Label styleClass="field-label" text="Password:" />
+                                            <PasswordField fx:id="loginPassword" promptText="Enter your password" styleClass="game-password-field" />
                                         </children>
                                     </VBox>
-                                    <Button fx:id="loginButton" styleClass="game-button-primary" text="SE CONNECTER" />
+                                    <Button fx:id="loginButton" styleClass="game-button-primary" text="LOGIN" />
                                     <Label fx:id="loginMessage" styleClass="message-label" />
                                 </children>
                             </VBox>
-                            <!-- Bouton pour basculer vers création -->
                             <VBox alignment="CENTER" spacing="10.0">
                                 <children>
-                                    <Text fill="LIGHTGRAY" styleClass="field-label" text="Pas encore de compte ?" />
-                                    <Button fx:id="showCreateButton" styleClass="game-button-secondary" text="CRÉER UN COMPTE" />
+                                    <Text fill="LIGHTGRAY" styleClass="field-label" text="No account yet?" />
+                                    <Button fx:id="showCreateButton" styleClass="game-button-secondary" text="CREATE ACCOUNT" />
                                 </children>
                             </VBox>
                         </children>
@@ -77,43 +69,40 @@
                     </VBox>
                 </StackPane>
 
-                <!-- Vue de création de compte -->
                 <StackPane fx:id="createContainer" visible="false">
                     <VBox alignment="CENTER" spacing="30.0" styleClass="form-container">
                         <children>
-                            <!-- SOUS-TITRE BLANC -->
                             <Text styleClass="section-title"
-                                  text="CRÉER UN COMPTE"
+                                  text="CREATE ACCOUNT"
                                   fill="WHITE"/>
                             <VBox alignment="CENTER" spacing="15.0" styleClass="form-fields">
                                 <children>
                                     <VBox spacing="5.0">
                                         <children>
-                                            <Label styleClass="field-label" text="Nom d'utilisateur :" />
-                                            <TextField fx:id="createUsername" promptText="Au moins 3 caractères" styleClass="game-textfield" />
+                                            <Label styleClass="field-label" text="Username:" />
+                                            <TextField fx:id="createUsername" promptText="At least 3 characters" styleClass="game-textfield" />
                                         </children>
                                     </VBox>
                                     <VBox spacing="5.0">
                                         <children>
-                                            <Label styleClass="field-label" text="Mot de passe :" />
-                                            <PasswordField fx:id="createPassword" promptText="Au moins 4 caractères" styleClass="game-password-field" />
+                                            <Label styleClass="field-label" text="Password:" />
+                                            <PasswordField fx:id="createPassword" promptText="At least 4 characters" styleClass="game-password-field" />
                                         </children>
                                     </VBox>
                                     <VBox spacing="5.0">
                                         <children>
-                                            <Label styleClass="field-label" text="Confirmer le mot de passe :" />
-                                            <PasswordField fx:id="confirmPassword" promptText="Répétez votre mot de passe" styleClass="game-password-field" />
+                                            <Label styleClass="field-label" text="Confirm password:" />
+                                            <PasswordField fx:id="confirmPassword" promptText="Repeat your password" styleClass="game-password-field" />
                                         </children>
                                     </VBox>
-                                    <Button fx:id="createButton" disable="true" styleClass="game-button-primary" text="CRÉER LE COMPTE" />
+                                    <Button fx:id="createButton" disable="true" styleClass="game-button-primary" text="CREATE ACCOUNT" />
                                     <Label fx:id="createMessage" styleClass="message-label" />
                                 </children>
                             </VBox>
-                            <!-- Bouton pour basculer vers connexion -->
                             <VBox alignment="CENTER" spacing="10.0">
                                 <children>
-                                    <Text fill="LIGHTGRAY" styleClass="field-label" text="Déjà un compte ?" />
-                                    <Button fx:id="showLoginButton" styleClass="game-button-secondary" text="SE CONNECTER" />
+                                    <Text fill="LIGHTGRAY" styleClass="field-label" text="Already have an account?" />
+                                    <Button fx:id="showLoginButton" styleClass="game-button-secondary" text="LOGIN" />
                                 </children>
                             </VBox>
                         </children>
@@ -123,48 +112,46 @@
                     </VBox>
                 </StackPane>
 
-                <!-- Vue du profil -->
                 <StackPane fx:id="profileContainer" visible="false">
                     <VBox alignment="CENTER" spacing="30.0" styleClass="form-container">
                         <children>
                             <Text styleClass="section-title"
-                                  text="MON PROFIL"
+                                  text="MY PROFILE"
                                   fill="WHITE"/>
                             <VBox alignment="CENTER" spacing="15.0" styleClass="profile-info">
                                 <children>
                                     <HBox alignment="CENTER" spacing="20.0" styleClass="profile-row">
                                         <children>
-                                            <Label styleClass="profile-label" text="Utilisateur :" />
+                                            <Label styleClass="profile-label" text="Username:" />
                                             <Label fx:id="profileUsername" styleClass="profile-value" />
                                         </children>
                                     </HBox>
                                     <HBox alignment="CENTER" spacing="20.0" styleClass="profile-row">
                                         <children>
-                                            <Label styleClass="profile-label" text="Parties jouées :" />
+                                            <Label styleClass="profile-label" text="Games played:" />
                                             <Label fx:id="profileGamesPlayed" styleClass="profile-value" />
                                         </children>
                                     </HBox>
                                     <HBox alignment="CENTER" spacing="20.0" styleClass="profile-row">
                                         <children>
-                                            <Label styleClass="profile-label" text="Parties gagnées :" />
+                                            <Label styleClass="profile-label" text="Games won:" />
                                             <Label fx:id="profileGamesWon" styleClass="profile-value" />
                                         </children>
                                     </HBox>
                                     <HBox alignment="CENTER" spacing="20.0" styleClass="profile-row">
                                         <children>
-                                            <Label styleClass="profile-label" text="Taux de victoire :" />
+                                            <Label styleClass="profile-label" text="Win rate:" />
                                             <Label fx:id="profileWinRate" styleClass="profile-value" />
                                         </children>
                                     </HBox>
                                     <HBox alignment="CENTER" spacing="20.0" styleClass="profile-row">
                                         <children>
-                                            <Label styleClass="profile-label" text="Score total :" />
+                                            <Label styleClass="profile-label" text="Total score:" />
                                             <Label fx:id="profileTotalScore" styleClass="profile-value" />
                                         </children>
                                     </HBox>
-                                    <!-- Séparateur -->
                                     <Region styleClass="divider" />
-                                    <Button fx:id="logoutButton" styleClass="game-button-danger" text="SE DÉCONNECTER" />
+                                    <Button fx:id="logoutButton" styleClass="game-button-danger" text="LOGOUT" />
                                 </children>
                             </VBox>
                         </children>
@@ -176,11 +163,10 @@
             </StackPane>
         </center>
 
-        <!-- Pied de page -->
         <bottom>
             <HBox alignment="CENTER" spacing="20.0" styleClass="footer-section">
                 <children>
-                    <Button fx:id="backButton" styleClass="game-button-secondary" text="RETOUR AU MENU" />
+                    <Button fx:id="backButton" styleClass="game-button-secondary" text="BACK TO MENU" />
                 </children>
                 <padding>
                     <Insets bottom="30.0" top="20.0" />

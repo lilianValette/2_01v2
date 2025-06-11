@@ -2,47 +2,35 @@ package com.bomberman.model;
 
 import java.util.*;
 
+/**
+ * Représente un joueur contrôlé par une intelligence artificielle.
+ * Gère le comportement selon le niveau de difficulté.
+ */
 public class PlayerAI extends Player {
     private final Random random = new Random();
     private final AIDifficulty difficulty;
 
-    // Pour savoir si l'IA doit fuir sa bombe (true = on vient de poser une bombe et on doit fuir)
+    // Pour la gestion de la fuite après avoir posé une bombe
     private boolean mustFleeOwnBomb = false;
     private int lastBombX = -1, lastBombY = -1, lastBombTimer = -1;
+    private boolean mustFleeOwnBombNormal = false;
 
     public PlayerAI(int id, int startX, int startY, AIDifficulty difficulty) {
         super(id, startX, startY, false);
         this.difficulty = difficulty;
     }
 
-    public AIDifficulty getDifficulty() { return difficulty; }
-
-    // Ignore la bombe que l'IA vient juste de poser si demandé
-    private int dangerLevelAt(int x, int y, List<Bomb> bombs, Grid grid, boolean ignoreOwnLastBomb) {
-        int minTick = Integer.MAX_VALUE;
-        for (Bomb bomb : bombs) {
-            int bx = bomb.getX(), by = bomb.getY(), range = bomb.getRange();
-            int timer = bomb.getTimer();
-            if (ignoreOwnLastBomb && bx == lastBombX && by == lastBombY && timer == lastBombTimer) continue;
-            if (x == bx && y == by) minTick = Math.min(minTick, timer);
-            if (y == by && Math.abs(x - bx) <= range) {
-                boolean blocked = false;
-                for (int ix = Math.min(x, bx) + 1; ix < Math.max(x, bx); ix++) {
-                    if (grid.getCell(ix, y) == Grid.CellType.INDESTRUCTIBLE) { blocked = true; break; }
-                }
-                if (!blocked) minTick = Math.min(minTick, timer);
-            }
-            if (x == bx && Math.abs(y - by) <= range) {
-                boolean blocked = false;
-                for (int iy = Math.min(y, by) + 1; iy < Math.max(y, by); iy++) {
-                    if (grid.getCell(x, iy) == Grid.CellType.INDESTRUCTIBLE) { blocked = true; break; }
-                }
-                if (!blocked) minTick = Math.min(minTick, timer);
-            }
-        }
-        return minTick;
+    /** @return le niveau de difficulté de l'IA */
+    public AIDifficulty getDifficulty() {
+        return difficulty;
     }
 
+    /**
+     * Met à jour l'IA selon la difficulté.
+     * @param grid grille du jeu
+     * @param bombs bombes en jeu
+     * @param allPlayers liste de tous les joueurs (pour la difficulté DIFFICILE)
+     */
     public void updateAI(Grid grid, List<Bomb> bombs, List<Player> allPlayers) {
         if (!isAlive()) return;
         switch (difficulty) {
@@ -52,7 +40,7 @@ public class PlayerAI extends Player {
         }
     }
 
-    // --- FACILE ---
+    // --- IA FACILE ---
     private void updateEasyAI(Grid grid, List<Bomb> bombs) {
         int curX = getX(), curY = getY();
         if (random.nextDouble() < 0.3) return;
@@ -70,17 +58,10 @@ public class PlayerAI extends Player {
             fleeOwnBomb(grid, bombs, curX, curY);
             return;
         }
-        int myDanger = dangerLevelAt(curX, curY, bombs, grid, false);
-        if (myDanger < Integer.MAX_VALUE && random.nextDouble() < 0.6) {
-            tryMoveToSafeNeighbour(grid, bombs, curX, curY);
-        } else {
-            tryMoveToSafeNeighbour(grid, bombs, curX, curY);
-        }
+        tryMoveToSafeNeighbour(grid, bombs, curX, curY);
     }
 
-    // --- NORMAL ---
-    private boolean mustFleeOwnBombNormal = false;
-
+    // --- IA NORMALE ---
     private void updateNormalAI(Grid grid, List<Bomb> bombs) {
         int curX = getX(), curY = getY();
         if (mustFleeOwnBombNormal) {
@@ -107,53 +88,21 @@ public class PlayerAI extends Player {
         tryMoveToSafeNeighbour(grid, bombs, curX, curY);
     }
 
-    // Pour la normale, copie la même logique de fuite que la difficile
+    // Fuite après pose de bombe (niveau normal)
     private boolean fleeOwnBombNormal(Grid grid, List<Bomb> bombs, int curX, int curY) {
-        int[][] directions = {{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
-        List<int[]> escapeDirs = new ArrayList<>();
-        for (int[] dir : directions) {
-            int nx = curX + dir[0], ny = curY + dir[1];
-            if (grid.isInBounds(nx, ny)
-                    && grid.getCell(nx, ny) == Grid.CellType.EMPTY
-                    && dangerLevelAt(nx, ny, bombs, grid, true) == Integer.MAX_VALUE) {
-                escapeDirs.add(dir);
-            }
-        }
-        if (!escapeDirs.isEmpty()) {
-            int[] dir = escapeDirs.get(random.nextInt(escapeDirs.size()));
-            move(dir[0], dir[1], grid);
+        if (fleeFromBomb(grid, bombs, curX, curY, true)) {
             if (dangerLevelAt(getX(), getY(), bombs, grid, false) == Integer.MAX_VALUE) {
-                mustFleeOwnBombNormal = false; // on a fui !
+                mustFleeOwnBombNormal = false;
             }
             return true;
-        }
-        // Sinon, tente la case la moins risquée
-        int bestDanger = Integer.MIN_VALUE;
-        int[] bestDir = null;
-        for (int[] dir : directions) {
-            int nx = curX + dir[0], ny = curY + dir[1];
-            if (grid.isInBounds(nx, ny) && grid.getCell(nx, ny) == Grid.CellType.EMPTY) {
-                int danger = dangerLevelAt(nx, ny, bombs, grid, true);
-                if (danger > bestDanger) {
-                    bestDanger = danger;
-                    bestDir = dir;
-                }
-            }
-        }
-        if (bestDir != null) {
-            move(bestDir[0], bestDir[1], grid);
-        }
-        if (dangerLevelAt(getX(), getY(), bombs, grid, false) == Integer.MAX_VALUE) {
-            mustFleeOwnBombNormal = false;
         }
         return false;
     }
 
-    // --- DIFFICILE ---
+    // --- IA DIFFICILE ---
     private void updateHardAI(Grid grid, List<Bomb> bombs, List<Player> allPlayers) {
         int curX = getX(), curY = getY();
 
-        // 1. Fuite prioritaire de sa bombe
         if (mustFleeOwnBomb) {
             fleeOwnBomb(grid, bombs, curX, curY);
             return;
@@ -165,26 +114,13 @@ public class PlayerAI extends Player {
             return;
         }
 
-        // CIBLE LE JOUEUR OU IA LA PLUS PROCHE (vivant)
-        Player target = null;
-        int targetDist = Integer.MAX_VALUE;
-        for (Player p : allPlayers) {
-            if (p != this && p.isAlive()) {
-                int dist = Math.abs(p.getX() - curX) + Math.abs(p.getY() - curY);
-                if (dist < targetDist) {
-                    targetDist = dist; target = p;
-                }
-            }
-        }
+        // Recherche la cible la plus proche
+        Player target = findNearestTarget(allPlayers, curX, curY);
 
-        // Si à portée de bombe, attaque mais vérifie la fuite (robuste)
-        if (target != null && targetDist <= 2) {
-            boolean alreadyBomb = false;
-            for (Bomb b : bombs)
-                if (b.getX() == curX && b.getY() == curY) alreadyBomb = true;
-            if (!alreadyBomb) {
-                boolean canEscape = canReallyEscapeAfterBomb(grid, bombs, curX, curY, Bomb.DEFAULT_TIMER);
-                if (canEscape || random.nextDouble() < 0.08) {
+        // Attaque si la cible est à portée
+        if (target != null && Math.abs(target.getX() - curX) + Math.abs(target.getY() - curY) <= 2) {
+            if (!hasBombAt(bombs, curX, curY)) {
+                if (canReallyEscapeAfterBomb(grid, bombs, curX, curY, Bomb.DEFAULT_TIMER) || random.nextDouble() < 0.08) {
                     Bomb bomb = dropBomb(Bomb.DEFAULT_TIMER, bombs);
                     if (bomb != null) {
                         bombs.add(bomb);
@@ -201,47 +137,14 @@ public class PlayerAI extends Player {
             return;
         }
 
-        // Sinon, se rapproche de la cible (A*) MAIS NE RENTRE PAS DANS LES ZONES DANGEREUSES
+        // Se rapproche de la cible par un chemin sûr
         if (target != null) {
             int[] nextMove = findSafePathToTarget(grid, bombs, curX, curY, target.getX(), target.getY());
             if (nextMove != null) {
                 move(nextMove[0], nextMove[1], grid);
-                // Si il bloque sur un mur destructible, pose une bombe mais vérifie la fuite (robuste)
                 int nx = curX + nextMove[0], ny = curY + nextMove[1];
-                if (grid.isInBounds(nx, ny) && grid.getCell(nx, ny) == Grid.CellType.DESTRUCTIBLE) {
-                    boolean alreadyBomb = false;
-                    for (Bomb b : bombs)
-                        if (b.getX() == curX && b.getY() == curY) alreadyBomb = true;
-                    if (!alreadyBomb) {
-                        boolean canEscape = canReallyEscapeAfterBomb(grid, bombs, curX, curY, Bomb.DEFAULT_TIMER);
-                        if (canEscape || random.nextDouble() < 0.08) {
-                            Bomb bomb = dropBomb(Bomb.DEFAULT_TIMER, bombs);
-                            if (bomb != null) {
-                                bombs.add(bomb);
-                                mustFleeOwnBomb = true;
-                                lastBombX = curX;
-                                lastBombY = curY;
-                                lastBombTimer = bomb.getTimer();
-                            }
-                        }
-                    }
-                }
-                return;
-            }
-        }
-
-        // Si bloqué, tente de casser un bloc adjacent (mais vérifie la fuite)
-        boolean bombed = false;
-        int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}};
-        for (int[] dir : dirs) {
-            int nx = curX + dir[0], ny = curY + dir[1];
-            if (grid.isInBounds(nx, ny) && grid.getCell(nx, ny) == Grid.CellType.DESTRUCTIBLE) {
-                boolean alreadyBomb = false;
-                for (Bomb b : bombs)
-                    if (b.getX() == curX && b.getY() == curY) alreadyBomb = true;
-                if (!alreadyBomb) {
-                    boolean canEscape = canReallyEscapeAfterBomb(grid, bombs, curX, curY, Bomb.DEFAULT_TIMER);
-                    if (canEscape || random.nextDouble() < 0.08) {
+                if (grid.isInBounds(nx, ny) && grid.getCell(nx, ny) == Grid.CellType.DESTRUCTIBLE && !hasBombAt(bombs, curX, curY)) {
+                    if (canReallyEscapeAfterBomb(grid, bombs, curX, curY, Bomb.DEFAULT_TIMER) || random.nextDouble() < 0.08) {
                         Bomb bomb = dropBomb(Bomb.DEFAULT_TIMER, bombs);
                         if (bomb != null) {
                             bombs.add(bomb);
@@ -250,12 +153,14 @@ public class PlayerAI extends Player {
                             lastBombY = curY;
                             lastBombTimer = bomb.getTimer();
                         }
-                        bombed = true;
                     }
                 }
+                return;
             }
         }
-        if (bombed) {
+
+        // Tente de casser un bloc adjacent
+        if (tryBombAdjacentDestructible(grid, bombs, curX, curY)) {
             fleeOwnBomb(grid, bombs, curX, curY);
             return;
         }
@@ -263,9 +168,55 @@ public class PlayerAI extends Player {
         tryMoveToSafeNeighbour(grid, bombs, curX, curY);
     }
 
+    // Recherche la cible vivante la plus proche
+    private Player findNearestTarget(List<Player> allPlayers, int curX, int curY) {
+        Player target = null;
+        int minDist = Integer.MAX_VALUE;
+        for (Player p : allPlayers) {
+            if (p != this && p.isAlive()) {
+                int dist = Math.abs(p.getX() - curX) + Math.abs(p.getY() - curY);
+                if (dist < minDist) {
+                    minDist = dist;
+                    target = p;
+                }
+            }
+        }
+        return target;
+    }
+
+    // Vérifie s'il y a déjà une bombe à la position donnée
+    private boolean hasBombAt(List<Bomb> bombs, int x, int y) {
+        for (Bomb b : bombs) {
+            if (b.getX() == x && b.getY() == y) return true;
+        }
+        return false;
+    }
+
+    // Tente de poser une bombe sur un bloc destructible adjacent
+    private boolean tryBombAdjacentDestructible(Grid grid, List<Bomb> bombs, int curX, int curY) {
+        boolean bombed = false;
+        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        for (int[] dir : dirs) {
+            int nx = curX + dir[0], ny = curY + dir[1];
+            if (grid.isInBounds(nx, ny) && grid.getCell(nx, ny) == Grid.CellType.DESTRUCTIBLE && !hasBombAt(bombs, curX, curY)) {
+                if (canReallyEscapeAfterBomb(grid, bombs, curX, curY, Bomb.DEFAULT_TIMER) || random.nextDouble() < 0.08) {
+                    Bomb bomb = dropBomb(Bomb.DEFAULT_TIMER, bombs);
+                    if (bomb != null) {
+                        bombs.add(bomb);
+                        mustFleeOwnBomb = true;
+                        lastBombX = curX;
+                        lastBombY = curY;
+                        lastBombTimer = bomb.getTimer();
+                        bombed = true;
+                    }
+                }
+            }
+        }
+        return bombed;
+    }
+
     /**
-     * Version sécurisée de la poursuite : renvoie le premier pas d'un chemin vers la cible
-     * qui traverse seulement des cases sûres (hors danger). Si aucun chemin sûr n'existe, retourne null.
+     * Renvoie le premier pas d'un chemin sûr vers la cible (aucun danger sur le chemin), ou null si aucun n'existe.
      */
     private int[] findSafePathToTarget(Grid grid, List<Bomb> bombs, int startX, int startY, int goalX, int goalY) {
         int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
@@ -279,25 +230,19 @@ public class PlayerAI extends Player {
                 Node prev = node;
                 while (prev.parent != null && prev.parent.parent != null)
                     prev = prev.parent;
-                // S'assure que le chemin ne traverse QUE des cases sûres
-                Node check = node;
-                boolean allSafe = true;
-                while (check != null) {
+                // Vérifie que le chemin est sûr
+                for (Node check = node; check != null; check = check.parent) {
                     if (dangerLevelAt(check.x, check.y, bombs, grid, false) != Integer.MAX_VALUE) {
-                        allSafe = false;
-                        break;
+                        return null;
                     }
-                    check = check.parent;
                 }
-                if (allSafe)
-                    return new int[]{prev.x - startX, prev.y - startY};
+                return new int[]{prev.x - startX, prev.y - startY};
             }
             visited[node.x][node.y] = true;
             for (int[] dir : directions) {
                 int nx = node.x + dir[0], ny = node.y + dir[1];
                 if (grid.isInBounds(nx, ny) && !visited[nx][ny]) {
                     Grid.CellType cell = grid.getCell(nx, ny);
-                    // On n'autorise la traversée que des cases vides ou destructibles ET sûres
                     if ((cell == Grid.CellType.EMPTY || cell == Grid.CellType.DESTRUCTIBLE) &&
                             dangerLevelAt(nx, ny, bombs, grid, false) == Integer.MAX_VALUE) {
                         int gCost = node.gCost + 1;
@@ -310,35 +255,41 @@ public class PlayerAI extends Player {
         return null;
     }
 
-    // Fuite intelligente de SA bombe (ignore la bombe qu'on vient de poser)
+    // Fuite intelligente après avoir posé une bombe (ignore la bombe fraîchement posée)
     private boolean fleeOwnBomb(Grid grid, List<Bomb> bombs, int curX, int curY) {
+        if (fleeFromBomb(grid, bombs, curX, curY, true)) {
+            if (dangerLevelAt(getX(), getY(), bombs, grid, false) == Integer.MAX_VALUE) {
+                mustFleeOwnBomb = false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    // Fuite générique d'une bombe (selon ignoreOwnLastBomb)
+    private boolean fleeFromBomb(Grid grid, List<Bomb> bombs, int curX, int curY, boolean ignoreOwnLastBomb) {
         int[][] directions = {{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
         List<int[]> escapeDirs = new ArrayList<>();
         for (int[] dir : directions) {
             int nx = curX + dir[0], ny = curY + dir[1];
-            // IGNORE SA PROPRE BOMBE dans le danger
             if (grid.isInBounds(nx, ny)
                     && grid.getCell(nx, ny) == Grid.CellType.EMPTY
-                    && dangerLevelAt(nx, ny, bombs, grid, true) == Integer.MAX_VALUE) {
+                    && dangerLevelAt(nx, ny, bombs, grid, ignoreOwnLastBomb) == Integer.MAX_VALUE) {
                 escapeDirs.add(dir);
             }
         }
         if (!escapeDirs.isEmpty()) {
             int[] dir = escapeDirs.get(random.nextInt(escapeDirs.size()));
             move(dir[0], dir[1], grid);
-            // Vérifie si on est enfin sorti de la zone de danger de SA bombe
-            if (dangerLevelAt(getX(), getY(), bombs, grid, false) == Integer.MAX_VALUE) {
-                mustFleeOwnBomb = false; // On n'est plus dans la zone de danger
-            }
             return true;
         }
-        // Si pas de case sûre ignorée, alors tente une case moins risquée (priorité à la fuite)
+        // Sinon, tente la case la moins risquée
         int bestDanger = Integer.MIN_VALUE;
         int[] bestDir = null;
         for (int[] dir : directions) {
             int nx = curX + dir[0], ny = curY + dir[1];
             if (grid.isInBounds(nx, ny) && grid.getCell(nx, ny) == Grid.CellType.EMPTY) {
-                int danger = dangerLevelAt(nx, ny, bombs, grid, true);
+                int danger = dangerLevelAt(nx, ny, bombs, grid, ignoreOwnLastBomb);
                 if (danger > bestDanger) {
                     bestDanger = danger;
                     bestDir = dir;
@@ -348,13 +299,10 @@ public class PlayerAI extends Player {
         if (bestDir != null) {
             move(bestDir[0], bestDir[1], grid);
         }
-        if (dangerLevelAt(getX(), getY(), bombs, grid, false) == Integer.MAX_VALUE) {
-            mustFleeOwnBomb = false;
-        }
         return false;
     }
 
-    // Déplacement normal (case vraiment sûre)
+    // Déplacement vers une case voisine vraiment sûre
     private boolean tryMoveToSafeNeighbour(Grid grid, List<Bomb> bombs, int curX, int curY) {
         int[][] directions = {{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
         List<int[]> choices = new ArrayList<>();
@@ -374,9 +322,9 @@ public class PlayerAI extends Player {
         return false;
     }
 
-    // Vérifie si l'IA peut atteindre une case sûre AVANT que la bombe n'explose
+    // Vérifie si l'IA peut atteindre une case sûre avant explosion de sa bombe
     private boolean canReallyEscapeAfterBomb(Grid grid, List<Bomb> bombs, int startX, int startY, int bombTimer) {
-        int[][] directions = {{1,0},{-1,0},{0,1},{0,-1}};
+        int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
         List<Bomb> bombsWithNew = new ArrayList<>(bombs);
         bombsWithNew.add(new Bomb(startX, startY, bombTimer, getBombRange(), this));
 
@@ -388,7 +336,6 @@ public class PlayerAI extends Player {
         while (!queue.isEmpty()) {
             int[] node = queue.poll();
             int x = node[0], y = node[1], tick = node[2];
-            // Pour la recherche d'échappatoire, on ignore la bombe fraîchement posée
             if (tick < bombTimer && dangerLevelAt(x, y, bombsWithNew, grid, true) == Integer.MAX_VALUE) {
                 return true;
             }
@@ -409,9 +356,40 @@ public class PlayerAI extends Player {
         return false;
     }
 
-    // Version ancienne : ne vérifiait pas la sécurité des cases du chemin !
-    // private int[] findPathToTargetOrDestructible(...)
+    /**
+     * Calcule le niveau de danger sur une case donnée.
+     * @param x position X
+     * @param y position Y
+     * @param bombs liste des bombes
+     * @param grid grille de jeu
+     * @param ignoreOwnLastBomb true si on ignore la bombe fraîchement posée par l'IA
+     * @return nombre de ticks avant explosion si danger, sinon Integer.MAX_VALUE
+     */
+    private int dangerLevelAt(int x, int y, List<Bomb> bombs, Grid grid, boolean ignoreOwnLastBomb) {
+        int minTick = Integer.MAX_VALUE;
+        for (Bomb bomb : bombs) {
+            int bx = bomb.getX(), by = bomb.getY(), range = bomb.getRange(), timer = bomb.getTimer();
+            if (ignoreOwnLastBomb && bx == lastBombX && by == lastBombY && timer == lastBombTimer) continue;
+            if (x == bx && y == by) minTick = Math.min(minTick, timer);
+            if (y == by && Math.abs(x - bx) <= range) {
+                boolean blocked = false;
+                for (int ix = Math.min(x, bx) + 1; ix < Math.max(x, bx); ix++) {
+                    if (grid.getCell(ix, y) == Grid.CellType.INDESTRUCTIBLE) { blocked = true; break; }
+                }
+                if (!blocked) minTick = Math.min(minTick, timer);
+            }
+            if (x == bx && Math.abs(y - by) <= range) {
+                boolean blocked = false;
+                for (int iy = Math.min(y, by) + 1; iy < Math.max(y, by); iy++) {
+                    if (grid.getCell(x, iy) == Grid.CellType.INDESTRUCTIBLE) { blocked = true; break; }
+                }
+                if (!blocked) minTick = Math.min(minTick, timer);
+            }
+        }
+        return minTick;
+    }
 
+    /** Noeud pour le calcul de chemin (A*) */
     private static class Node {
         int x, y, gCost, hCost, fCost;
         Node parent;

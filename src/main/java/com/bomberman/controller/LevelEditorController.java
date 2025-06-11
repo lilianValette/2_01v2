@@ -16,6 +16,11 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.util.Optional;
 
+/**
+ * Contrôleur de l'éditeur de niveaux.
+ * Permet la création, la modification et la sauvegarde de niveaux personnalisés.
+ * Les textes d'interface utilisateur sont en anglais, les commentaires et erreurs en français.
+ */
 public class LevelEditorController {
     @FXML private StackPane rootPane;
     @FXML private ImageView backgroundImage;
@@ -27,7 +32,6 @@ public class LevelEditorController {
     @FXML private Button chooseGroundBtn, chooseIndestructibleBtn, chooseDestructibleBtn;
 
     private ToggleGroup paletteGroup;
-
     private Stage stage;
     private static final int COLUMNS = 15;
     private static final int ROWS = 13;
@@ -38,13 +42,16 @@ public class LevelEditorController {
     private String wallDestructibleImagePath = "/images/elementsMap/murDestructible.png";
 
     private Image cachedGroundImage, cachedIndestructibleImage, cachedDestructibleImage;
-
-    private char[][] gridData = new char[ROWS][COLUMNS];
-    private Button[][] gridButtons = new Button[ROWS][COLUMNS];
+    private final char[][] gridData = new char[ROWS][COLUMNS];
+    private final Button[][] gridButtons = new Button[ROWS][COLUMNS];
 
     private boolean isDrawing = false;
     private char currentType = ' ';
 
+    /**
+     * Définit la fenêtre principale, la taille et applique le CSS.
+     * @param stage fenêtre principale JavaFX
+     */
     public void setStage(Stage stage) {
         this.stage = stage;
         stage.setWidth(900);
@@ -58,6 +65,9 @@ public class LevelEditorController {
         Platform.runLater(this::loadStylesheet);
     }
 
+    /**
+     * Initialise l'éditeur de niveau.
+     */
     @FXML
     public void initialize() {
         loadBackgroundImage();
@@ -76,6 +86,9 @@ public class LevelEditorController {
         gridPane.setOnMouseDragReleased(e -> isDrawing = false);
     }
 
+    /**
+     * Charge l'image de fond.
+     */
     private void loadBackgroundImage() {
         try {
             java.net.URL url = getClass().getResource("/images/menu/Bomber_fond.jpg");
@@ -85,12 +98,17 @@ public class LevelEditorController {
                 backgroundImage.setFitWidth(900);
                 backgroundImage.setFitHeight(700);
                 backgroundImage.setPreserveRatio(false);
+            } else {
+                System.err.println("Image de fond non trouvée : /images/menu/Bomber_fond.jpg");
             }
         } catch (Exception e) {
-            System.err.println("Erreur lors du chargement du fond : " + e.getMessage());
+            System.err.println("Erreur lors du chargement du fond : " + e.getMessage());
         }
     }
 
+    /**
+     * Charge la feuille de style CSS pour l'éditeur.
+     */
     private void loadStylesheet() {
         try {
             java.net.URL cssUrl = getClass().getResource("/css/style.css");
@@ -99,10 +117,13 @@ public class LevelEditorController {
                 stage.getScene().getStylesheets().add(cssUrl.toExternalForm());
             }
         } catch (Exception e) {
-            System.err.println("Erreur lors du chargement du CSS : " + e.getMessage());
+            System.err.println("Erreur lors du chargement du CSS : " + e.getMessage());
         }
     }
 
+    /**
+     * Met en place les boutons du choix de palette.
+     */
     private void setupPalette() {
         paletteGroup = new ToggleGroup();
         emptyButton.setToggleGroup(paletteGroup);
@@ -111,23 +132,20 @@ public class LevelEditorController {
         paletteGroup.selectToggle(emptyButton);
     }
 
+    /**
+     * Met en place la grille et son comportement.
+     */
     private void setupGrid() {
         gridPane.getChildren().clear();
         gridPane.getColumnConstraints().clear();
         gridPane.getRowConstraints().clear();
 
         for (int col = 0; col < COLUMNS; col++) {
-            ColumnConstraints cc = new ColumnConstraints();
-            cc.setMinWidth(CELL_SIZE);
-            cc.setPrefWidth(CELL_SIZE);
-            cc.setMaxWidth(CELL_SIZE);
+            ColumnConstraints cc = new ColumnConstraints(CELL_SIZE, CELL_SIZE, CELL_SIZE);
             gridPane.getColumnConstraints().add(cc);
         }
         for (int row = 0; row < ROWS; row++) {
-            RowConstraints rc = new RowConstraints();
-            rc.setMinHeight(CELL_SIZE);
-            rc.setPrefHeight(CELL_SIZE);
-            rc.setMaxHeight(CELL_SIZE);
+            RowConstraints rc = new RowConstraints(CELL_SIZE, CELL_SIZE, CELL_SIZE);
             gridPane.getRowConstraints().add(rc);
         }
 
@@ -145,35 +163,16 @@ public class LevelEditorController {
                 updateCellVisual(cell, gridData[row][col]);
                 cell.setFocusTraversable(false);
 
-                cell.setOnMousePressed(e -> {
-                    Toggle selected = paletteGroup.getSelectedToggle();
-                    currentType = ' ';
-                    if (selected == wallButton) currentType = '#';
-                    else if (selected == breakableButton) currentType = '%';
-
-                    isDrawing = true;
-                    gridData[finalRow][finalCol] = currentType;
-                    updateCellVisual(cell, currentType);
-                });
-
-                cell.setOnDragDetected(e -> {
-                    cell.startFullDrag();
-                });
-
+                cell.setOnMousePressed(e -> handleCellPressed(finalRow, finalCol, cell));
+                cell.setOnDragDetected(e -> cell.startFullDrag());
                 cell.setOnMouseDragEntered(e -> {
                     if (isDrawing) {
                         gridData[finalRow][finalCol] = currentType;
                         updateCellVisual(cell, currentType);
                     }
                 });
-
-                cell.setOnMouseReleased(e -> {
-                    isDrawing = false;
-                });
-
-                cell.setOnMouseDragReleased(e -> {
-                    isDrawing = false;
-                });
+                cell.setOnMouseReleased(e -> isDrawing = false);
+                cell.setOnMouseDragReleased(e -> isDrawing = false);
 
                 gridButtons[row][col] = cell;
                 gridPane.add(cell, col, row);
@@ -181,6 +180,22 @@ public class LevelEditorController {
         }
     }
 
+    /**
+     * Gère l'appui sur une cellule de la grille.
+     */
+    private void handleCellPressed(int row, int col, Button cell) {
+        Toggle selected = paletteGroup.getSelectedToggle();
+        currentType = ' ';
+        if (selected == wallButton) currentType = '#';
+        else if (selected == breakableButton) currentType = '%';
+        isDrawing = true;
+        gridData[row][col] = currentType;
+        updateCellVisual(cell, currentType);
+    }
+
+    /**
+     * Met à jour l'affichage d'une cellule selon son type.
+     */
     private void updateCellVisual(Button cell, char type) {
         cell.setText("");
         Image img = switch (type) {
@@ -190,14 +205,17 @@ public class LevelEditorController {
         };
         ImageView icon = (img != null) ? new ImageView(img) : null;
         if (icon != null) {
-            icon.setFitWidth(CELL_SIZE-8);
-            icon.setFitHeight(CELL_SIZE-8);
+            icon.setFitWidth(CELL_SIZE - 8);
+            icon.setFitHeight(CELL_SIZE - 8);
             icon.setPreserveRatio(true);
         }
         cell.setGraphic(icon);
         cell.setStyle("-fx-background-color: #222; -fx-border-color: #FFD700; -fx-border-width: 1;");
     }
 
+    /**
+     * Vide la grille.
+     */
     private void clearGrid() {
         for (int row = 0; row < ROWS; row++)
             for (int col = 0; col < COLUMNS; col++)
@@ -205,6 +223,9 @@ public class LevelEditorController {
         refreshGridGraphics();
     }
 
+    /**
+     * Prépare les boutons de sélection d'image.
+     */
     private void setupImageChoosers() {
         chooseGroundBtn.setOnAction(e -> chooseImage("Choisir une image de sol", path -> {
             groundImagePath = path;
@@ -220,6 +241,9 @@ public class LevelEditorController {
         }));
     }
 
+    /**
+     * Met à jour les aperçus d'images et le cache.
+     */
     private void updatePreviews() {
         setPreview(groundPreview, groundImagePath);
         setPreview(indestructiblePreview, wallIndestructibleImagePath);
@@ -228,6 +252,9 @@ public class LevelEditorController {
         refreshGridGraphics();
     }
 
+    /**
+     * Met à jour l'aperçu d'un bouton.
+     */
     private void setPreview(ImageView view, String path) {
         try {
             Image img = path.startsWith("/") && getClass().getResource(path) != null
@@ -239,29 +266,37 @@ public class LevelEditorController {
         }
     }
 
+    /**
+     * Recharge les images en cache.
+     */
     private void reloadCachedImages() {
         cachedGroundImage = loadImage(groundImagePath);
         cachedIndestructibleImage = loadImage(wallIndestructibleImagePath);
         cachedDestructibleImage = loadImage(wallDestructibleImagePath);
     }
 
+    /**
+     * Charge une image (depuis ressources ou fichier).
+     */
     private Image loadImage(String path) {
         try {
             if (path.startsWith("/") && getClass().getResource(path) != null)
-                return new Image(getClass().getResource(path).toExternalForm(), CELL_SIZE-8, CELL_SIZE-8, true, true, true);
+                return new Image(getClass().getResource(path).toExternalForm(), CELL_SIZE - 8, CELL_SIZE - 8, true, true, true);
             else
-                return new Image("file:" + path, CELL_SIZE-8, CELL_SIZE-8, true, true, true);
+                return new Image("file:" + path, CELL_SIZE - 8, CELL_SIZE - 8, true, true, true);
         } catch (Exception e) {
             return null;
         }
     }
 
+    /**
+     * Ouvre une boîte de dialogue pour choisir une image.
+     */
     private void chooseImage(String title, java.util.function.Consumer<String> callback) {
         FileChooser fc = new FileChooser();
         fc.setTitle(title);
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg"));
 
-        // Définit le répertoire initial (adapte le chemin selon ton projet)
         File initialDir = new File("src/main/resources/images/elementsMap");
         if (initialDir.exists()) {
             fc.setInitialDirectory(initialDir);
@@ -271,14 +306,18 @@ public class LevelEditorController {
         if (f != null) callback.accept(f.getAbsolutePath());
     }
 
+    /**
+     * Rafraîchit l'affichage graphique de la grille.
+     */
     private void refreshGridGraphics() {
-        for (int row = 0; row < ROWS; row++) {
-            for (int col = 0; col < COLUMNS; col++) {
+        for (int row = 0; row < ROWS; row++)
+            for (int col = 0; col < COLUMNS; col++)
                 updateCellVisual(gridButtons[row][col], gridData[row][col]);
-            }
-        }
     }
 
+    /**
+     * Sauvegarde le niveau dans un fichier.
+     */
     private void saveLevel() {
         TextInputDialog dialog = new TextInputDialog("MonNiveau");
         dialog.setTitle("Nom du niveau");
@@ -313,6 +352,9 @@ public class LevelEditorController {
         }
     }
 
+    /**
+     * Charge un niveau depuis un fichier.
+     */
     private void loadLevel() {
         FileChooser fc = new FileChooser();
         fc.setTitle("Charger un niveau");
@@ -339,11 +381,17 @@ public class LevelEditorController {
         }
     }
 
+    /**
+     * Affiche une boîte de dialogue d'erreur.
+     */
     private void showError(String msg) {
         Alert alert = new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK);
         alert.showAndWait();
     }
 
+    /**
+     * Retourne à l'écran des paramètres.
+     */
     private void returnToSettings() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bomberman/view/settings.fxml"));
@@ -358,8 +406,7 @@ public class LevelEditorController {
             stage.setScene(scene);
 
         } catch (Exception ex) {
-            System.err.println("Erreur lors du retour aux paramètres : " + ex.getMessage());
-            ex.printStackTrace();
+            System.err.println("Erreur lors du retour aux paramètres : " + ex.getMessage());
         }
     }
 }

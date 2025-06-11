@@ -13,7 +13,6 @@
            prefWidth="800" prefHeight="600"
            stylesheets="@style/endgame-style.css">
 
-    <!-- Fond rétro, étiré exactement comme dans le menu -->
     <ImageView fx:id="backgroundImage"
                fitWidth="800"
                fitHeight="600"
@@ -23,12 +22,12 @@
 
     <VBox spacing="24" alignment="CENTER">
         <Label fx:id="messageLabel"
-               text="Fin de la partie"
+               text="Game Over"
                styleClass="endgame-message"
                wrapText="true"
                maxWidth="400"/>
         <Button fx:id="returnToMenuButton"
-                text="RETOUR AU MENU"
+                text="BACK TO MENU"
                 onAction="#handleReturnToMenu"
                 styleClass="menu-button"/>
     </VBox>

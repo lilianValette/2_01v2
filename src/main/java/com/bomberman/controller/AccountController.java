@@ -1,4 +1,3 @@
-
 package com.bomberman.controller;
 
 import com.bomberman.model.User;
@@ -15,49 +14,43 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
+/**
+ * User account management controller (login, registration, profile).
+ * Messages d'erreur techniques en français.
+ */
 public class AccountController {
     @FXML private StackPane rootPane;
     @FXML private ImageView backgroundImage;
-
-    // Conteneurs principaux
     @FXML private StackPane loginContainer;
     @FXML private StackPane createContainer;
     @FXML private StackPane profileContainer;
-
-    // Boutons de navigation entre les vues
     @FXML private Button showCreateButton;
     @FXML private Button showLoginButton;
-
-    // Éléments de connexion
     @FXML private TextField loginUsername;
     @FXML private PasswordField loginPassword;
     @FXML private Button loginButton;
     @FXML private Label loginMessage;
-
-    // Éléments de création de compte
     @FXML private TextField createUsername;
     @FXML private PasswordField createPassword;
     @FXML private PasswordField confirmPassword;
     @FXML private Button createButton;
     @FXML private Label createMessage;
-
-    // Éléments de profil
     @FXML private Label profileUsername;
     @FXML private Label profileGamesPlayed;
     @FXML private Label profileGamesWon;
     @FXML private Label profileWinRate;
     @FXML private Label profileTotalScore;
     @FXML private Button logoutButton;
-
-    // Bouton de retour
     @FXML private Button backButton;
 
     private Stage stage;
     private UserManager userManager;
 
+    /**
+     * Sets the main window and applies a fixed size.
+     */
     public void setStage(Stage stage) {
         this.stage = stage;
-        // Définir une taille fixe identique au menu
         stage.setWidth(800);
         stage.setHeight(600);
         stage.setMinWidth(800);
@@ -67,10 +60,8 @@ public class AccountController {
         stage.setResizable(false);
         stage.centerOnScreen();
 
-        // Charger le fichier CSS après que la scène soit définie
         Platform.runLater(() -> {
             loadStylesheet();
-            // Re-appliquer les styles des boutons après le chargement du CSS
             setupButtonStyles();
         });
     }
@@ -78,91 +69,71 @@ public class AccountController {
     @FXML
     public void initialize() {
         userManager = UserManager.getInstance();
-
-        // Charger l'image de fond
         loadBackgroundImage();
 
-        // Configuration des boutons
         loginButton.setOnAction(e -> handleLogin());
         createButton.setOnAction(e -> handleCreateAccount());
         logoutButton.setOnAction(e -> handleLogout());
         backButton.setOnAction(e -> returnToMenu());
-
-        // Boutons de navigation
         showCreateButton.setOnAction(e -> showCreateView());
         showLoginButton.setOnAction(e -> showLoginView());
 
-        // Mise à jour de l'affichage selon l'état de connexion
         updateUI();
 
-        // Listeners pour validation en temps réel
         createUsername.textProperty().addListener((obs, oldVal, newVal) -> validateCreateForm());
         createPassword.textProperty().addListener((obs, oldVal, newVal) -> validateCreateForm());
         confirmPassword.textProperty().addListener((obs, oldVal, newVal) -> validateCreateForm());
 
-        // Appliquer les styles des boutons après l'initialisation
-        Platform.runLater(() -> setupButtonStyles());
+        Platform.runLater(this::setupButtonStyles);
     }
 
+    /**
+     * Loads the game's main CSS file.
+     */
     private void loadStylesheet() {
         try {
-            // Charger le fichier CSS principal du jeu
             java.net.URL cssUrl = getClass().getResource("/css/style.css");
-            if (cssUrl != null) {
+            if (cssUrl != null && stage.getScene() != null) {
                 String cssPath = cssUrl.toExternalForm();
-                if (stage.getScene() != null) {
-                    stage.getScene().getStylesheets().clear(); // Nettoyer les anciens styles
-                    stage.getScene().getStylesheets().add(cssPath);
-                    System.out.println("CSS chargé avec succès : " + cssPath);
-                } else {
-                    System.err.println("Scene est null, impossible de charger le CSS");
-                }
-            } else {
-                System.err.println("Fichier CSS non trouvé : /css/style.css");
+                stage.getScene().getStylesheets().clear();
+                stage.getScene().getStylesheets().add(cssPath);
             }
         } catch (Exception e) {
             System.err.println("Erreur lors du chargement du CSS : " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
+    /**
+     * Applies custom CSS classes to buttons.
+     */
     private void setupButtonStyles() {
-        // Attendre que la scène soit prête
         Platform.runLater(() -> {
-            // Supprimer les classes par défaut et appliquer les bonnes classes CSS
             setupButtonStyle(loginButton, "account-button");
             setupButtonStyle(createButton, "account-button");
             setupButtonStyle(showCreateButton, "account-button");
             setupButtonStyle(showLoginButton, "account-button");
             setupButtonStyle(logoutButton, "game-button-danger");
             setupButtonStyle(backButton, "game-button-secondary");
-
-            // Forcer la mise à jour des styles
             if (stage.getScene() != null && stage.getScene().getRoot() != null) {
                 stage.getScene().getRoot().applyCss();
             }
         });
     }
 
+    /**
+     * Applies a CSS class to a button.
+     */
     private void setupButtonStyle(Button button, String styleClass) {
         if (button != null) {
-            // Debug : afficher les classes actuelles
-            System.out.println("Avant - Bouton " + button.getId() + " classes : " + button.getStyleClass());
-
-            // Nettoyer toutes les classes existantes sauf "button" si nécessaire
             button.getStyleClass().removeAll("button", "account-button", "game-button-danger", "game-button-secondary");
-
-            // Ajouter la classe spécifique
             button.getStyleClass().add(styleClass);
-
-            // Debug : afficher les classes après modification
-            System.out.println("Après - Bouton " + button.getId() + " classes : " + button.getStyleClass());
-
-            // Forcer la mise à jour du style
             button.applyCss();
         }
     }
 
+    /**
+     * Loads the account background image.
+     */
     private void loadBackgroundImage() {
         try {
             java.net.URL url = getClass().getResource("/images/menu/Bomber_fond.jpg");
@@ -172,60 +143,69 @@ public class AccountController {
                 backgroundImage.setFitWidth(800);
                 backgroundImage.setFitHeight(600);
                 backgroundImage.setPreserveRatio(false);
-            } else {
-                System.err.println("Image de fond non trouvée : /images/menu/Bomber_fond.jpg");
             }
         } catch (Exception e) {
             System.err.println("Erreur lors du chargement de l'image de fond : " + e.getMessage());
         }
     }
 
+    /**
+     * Show the login form.
+     */
     private void showLoginView() {
         setContainerVisibility(true, false, false);
         clearMessages();
         clearLoginForm();
     }
 
+    /**
+     * Show the registration form.
+     */
     private void showCreateView() {
         setContainerVisibility(false, true, false);
         clearMessages();
         clearCreateForm();
     }
 
+    /**
+     * Show the profile for the logged-in user.
+     */
     private void showProfileView() {
         setContainerVisibility(false, false, true);
         updateProfileInfo();
     }
 
+    /**
+     * Updates the visibility of containers.
+     */
     private void setContainerVisibility(boolean login, boolean create, boolean profile) {
         loginContainer.setVisible(login);
         createContainer.setVisible(create);
         profileContainer.setVisible(profile);
     }
 
+    /**
+     * Handles user login.
+     */
     private void handleLogin() {
         String username = loginUsername.getText().trim();
         String password = loginPassword.getText();
 
         if (username.isEmpty() || password.isEmpty()) {
-            showLoginMessage("Veuillez remplir tous les champs.", true);
+            showLoginMessage("Please fill in all fields.", true);
             return;
         }
 
-        // Désactiver le bouton pendant la connexion
         loginButton.setDisable(true);
 
         if (userManager.login(username, password)) {
-            showLoginMessage("Connexion réussie ! Bienvenue " + username, false);
-
-            // Utiliser un Task pour gérer le délai sans bloquer l'UI
-            Task<Void> delayTask = new Task<Void>() {
+            showLoginMessage("Login successful! Welcome " + username, false);
+            Task<Void> delayTask = new Task<>() {
                 @Override
                 protected Void call() throws Exception {
                     Thread.sleep(1000);
                     return null;
                 }
-
                 @Override
                 protected void succeeded() {
                     Platform.runLater(() -> {
@@ -234,14 +214,16 @@ public class AccountController {
                     });
                 }
             };
-
             new Thread(delayTask).start();
         } else {
-            showLoginMessage("Nom d'utilisateur ou mot de passe incorrect.", true);
+            showLoginMessage("Incorrect username or password.", true);
             loginButton.setDisable(false);
         }
     }
 
+    /**
+     * Handles user registration.
+     */
     private void handleCreateAccount() {
         String username = createUsername.getText().trim();
         String password = createPassword.getText();
@@ -254,16 +236,13 @@ public class AccountController {
         createButton.setDisable(true);
 
         if (userManager.createAccount(username, password)) {
-            showCreateMessage("Compte créé avec succès ! Vous pouvez maintenant vous connecter.", false);
-
-            // Utiliser un Task pour gérer le délai
-            Task<Void> delayTask = new Task<Void>() {
+            showCreateMessage("Account created successfully! You can now log in.", false);
+            Task<Void> delayTask = new Task<>() {
                 @Override
                 protected Void call() throws Exception {
                     Thread.sleep(1500);
                     return null;
                 }
-
                 @Override
                 protected void succeeded() {
                     Platform.runLater(() -> {
@@ -272,45 +251,53 @@ public class AccountController {
                     });
                 }
             };
-
             new Thread(delayTask).start();
         } else {
-            showCreateMessage("Ce nom d'utilisateur est déjà pris.", true);
+            showCreateMessage("This username is already taken.", true);
             createButton.setDisable(false);
         }
     }
 
+    /**
+     * Validates registration fields.
+     */
     private boolean validateAccountCreation(String username, String password, String confirm) {
         if (username.isEmpty() || password.isEmpty() || confirm.isEmpty()) {
-            showCreateMessage("Veuillez remplir tous les champs.", true);
+            showCreateMessage("Please fill in all fields.", true);
             return false;
         }
 
         if (username.length() < 3) {
-            showCreateMessage("Le nom d'utilisateur doit contenir au moins 3 caractères.", true);
+            showCreateMessage("Username must be at least 3 characters long.", true);
             return false;
         }
 
         if (password.length() < 4) {
-            showCreateMessage("Le mot de passe doit contenir au moins 4 caractères.", true);
+            showCreateMessage("Password must be at least 4 characters long.", true);
             return false;
         }
 
         if (!password.equals(confirm)) {
-            showCreateMessage("Les mots de passe ne correspondent pas.", true);
+            showCreateMessage("Passwords do not match.", true);
             return false;
         }
 
         return true;
     }
 
+    /**
+     * Logs out the current user.
+     */
     private void handleLogout() {
         userManager.logout();
         clearAllForms();
         updateUI();
-        showLoginMessage("Vous avez été déconnecté.", false);
+        showLoginMessage("You have been logged out.", false);
     }
 
+    /**
+     * Real-time validation for registration form.
+     */
     private void validateCreateForm() {
         String username = createUsername.getText().trim();
         String password = createPassword.getText();
@@ -324,6 +311,9 @@ public class AccountController {
         createButton.setDisable(!isValid);
     }
 
+    /**
+     * Update the display depending on login state.
+     */
     private void updateUI() {
         boolean isLoggedIn = userManager.isLoggedIn();
 
@@ -334,6 +324,9 @@ public class AccountController {
         }
     }
 
+    /**
+     * Updates user profile info.
+     */
     private void updateProfileInfo() {
         User user = userManager.getCurrentUser();
         if (user != null) {
@@ -345,14 +338,23 @@ public class AccountController {
         }
     }
 
+    /**
+     * Shows a message in the login form.
+     */
     private void showLoginMessage(String message, boolean isError) {
         setMessageStyle(loginMessage, message, isError);
     }
 
+    /**
+     * Shows a message in the registration form.
+     */
     private void showCreateMessage(String message, boolean isError) {
         setMessageStyle(createMessage, message, isError);
     }
 
+    /**
+     * Applies style to a message (success or error).
+     */
     private void setMessageStyle(Label messageLabel, String message, boolean isError) {
         messageLabel.setText(message);
         messageLabel.getStyleClass().clear();
@@ -363,59 +365,65 @@ public class AccountController {
         }
     }
 
+    /**
+     * Clears all info messages.
+     */
     private void clearMessages() {
         clearMessage(loginMessage);
         clearMessage(createMessage);
     }
 
+    /**
+     * Clears a label's message.
+     */
     private void clearMessage(Label messageLabel) {
         messageLabel.setText("");
         messageLabel.getStyleClass().removeAll("success-message", "error-message");
     }
 
+    /**
+     * Clears the login form.
+     */
     private void clearLoginForm() {
         loginUsername.clear();
         loginPassword.clear();
     }
 
+    /**
+     * Clears the registration form.
+     */
     private void clearCreateForm() {
         createUsername.clear();
         createPassword.clear();
         confirmPassword.clear();
         clearMessage(createMessage);
-        // Réactiver le bouton si il était désactivé
-        createButton.setDisable(true); // Il sera réactivé par la validation
+        createButton.setDisable(true);
     }
 
+    /**
+     * Clears all forms and messages.
+     */
     private void clearAllForms() {
         clearLoginForm();
         clearCreateForm();
         clearMessages();
     }
 
+    /**
+     * Return to the main menu.
+     */
     private void returnToMenu() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bomberman/view/menu.fxml"));
             Parent root = loader.load();
-
-            // Créer une nouvelle scène avec le CSS
             Scene scene = new Scene(root);
 
-            // Appliquer le CSS à la nouvelle scène
-            try {
-                java.net.URL cssUrl = getClass().getResource("/css/style.css");
-                if (cssUrl != null) {
-                    String cssPath = cssUrl.toExternalForm();
-                    scene.getStylesheets().add(cssPath);
-                    System.out.println("CSS appliqué au menu : " + cssPath);
-                } else {
-                    System.err.println("CSS non trouvé pour le menu");
-                }
-            } catch (Exception e) {
-                System.err.println("Erreur lors du chargement du CSS pour le menu : " + e.getMessage());
+            java.net.URL cssUrl = getClass().getResource("/css/style.css");
+            if (cssUrl != null) {
+                String cssPath = cssUrl.toExternalForm();
+                scene.getStylesheets().add(cssPath);
             }
 
-            // Configurer le contrôleur du menu
             MenuController menuController = loader.getController();
             stage.setScene(scene);
             menuController.setStage(stage);

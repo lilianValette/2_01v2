@@ -36,7 +36,7 @@ class LevelTest {
     void testNormalizeResourcePath() {
         Level l = new Level("n", "FondFeuilles.PNG", "BonhommeNeige.PNG", "MurDestructible.PNG", new int[1][1]);
         assertEquals("/fondFeuilles.png", l.getGroundImagePath());
-        assertEquals("/bonhommeNeige.png", l.getWallIndestructibleImagePath());
+        assertEquals("/BonhommeNeige.png", l.getWallIndestructibleImagePath());
         assertEquals("/murDestructible.png", l.getWallDestructibleImagePath());
     }
 

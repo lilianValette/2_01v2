@@ -1,6 +1,5 @@
 package com.bomberman.controller;
 
-import com.bomberman.model.AIDifficulty;
 import com.bomberman.model.GameSettings;
 import com.bomberman.model.Level;
 import javafx.application.Platform;
@@ -227,7 +226,7 @@ public class GameSetupController {
      */
     private void startGame() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bomberman/view/game-view.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bomberman/view/gameView.fxml"));
             Parent root = loader.load();
             GameController gameController = loader.getController();
             gameController.setStage(stage);

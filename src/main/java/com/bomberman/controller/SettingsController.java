@@ -244,7 +244,7 @@ public class SettingsController {
      */
     private void openLevelEditor() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bomberman/view/level-editor.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bomberman/view/levelEditor.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root);
             java.net.URL cssUrl = getClass().getResource("/css/settings-menu.css");

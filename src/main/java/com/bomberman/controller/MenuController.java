@@ -149,7 +149,7 @@ public class MenuController {
     @FXML
     private void startGameSetup() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bomberman/view/game-setup.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bomberman/view/gameSetup.fxml"));
             Parent root = loader.load();
             GameSetupController controller = loader.getController();
             controller.setStage(stage);
